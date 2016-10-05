@@ -38,7 +38,7 @@ public class CsvExpenses {
         BufferedReader br = null;
         String line = "";
         String splitBy = ";";
-        File csvFileToRead = new File("C:/Users/Lefteris/testForThessProject/2016_03_31_23.29expense.csv");
+        File csvFileToRead = new File("/home/turnguard/code/workspace_bde/pilot-sc6-cycle1/eu-bde-sc6-parser/Input CSV/Expenses/2016/06June/2016_06_01_21.29.csv");
         System.out.println("Input -expense csv file: " + csvFileToRead.getName());
         // RDF Declarations
         Model model = ModelFactory.createDefaultModel();
@@ -243,7 +243,7 @@ public class CsvExpenses {
             System.out.println("Exception caught" + err.getMessage());
         }
         try {
-            BufferedWriter fout = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("C:/Users/Lefteris/testForThessProject/rdf/expense" + currentDate + ".rdf"), "UTF8"));
+            BufferedWriter fout = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("/home/turnguard/Downloads/2016_06_01_21.29.rdf"), "UTF8"));
             model.write(fout);
             System.out.println("Transformation of expense csv to rdf file completed!!!!");
         } catch (IOException e) {
