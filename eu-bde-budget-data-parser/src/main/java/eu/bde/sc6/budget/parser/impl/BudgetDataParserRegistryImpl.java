@@ -26,10 +26,20 @@ public class BudgetDataParserRegistryImpl implements BudgetDataParserRegistry {
         return registry;
     }
 
+    @Override
     public BudgetDataParser getBudgetDataParser(String identifier) throws UnknownBudgetDataParserException {
-        for( Iterator<BudgetDataParser> iter = this.loader.iterator(); iter.hasNext(); ){
-            BudgetDataParser parser = iter.next();
+        for (BudgetDataParser parser : this.loader) {
             if(parser.getIdentifier().equals(identifier)){
+                return parser;
+            }
+        }
+        throw new UnknownBudgetDataParserException();
+    }
+
+    @Override
+    public BudgetDataParser getBudgetDataParserForFileName(String fileName) throws UnknownBudgetDataParserException {
+        for (BudgetDataParser parser : this.loader) {
+            if(parser.canHandleByFileName(fileName)){
                 return parser;
             }
         }

@@ -1,12 +1,20 @@
 package eu.bde.spark.job.sc6;
 
+import eu.bde.sc6.budget.parser.api.TransformationException;
+import eu.bde.sc6.budget.parser.api.UnknownBudgetDataParserException;
+import eu.bde.sc6.budget.parser.impl.BudgetDataParserRegistryImpl;
+import eu.bde.virtuoso.utils.VirtuosoInserter;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import kafka.serializer.DefaultDecoder;
 import kafka.serializer.StringDecoder;
 import org.apache.commons.io.FileUtils;
@@ -20,6 +28,9 @@ import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka.KafkaUtils;
 import scala.Tuple2;
 import org.apache.spark.storage.StorageLevel;
+import org.openrdf.model.Statement;
+import org.openrdf.model.impl.URIImpl;
+import org.openrdf.rio.RDFHandlerException;
 
 public class App {
     
@@ -43,7 +54,15 @@ public class App {
         String KAFKA_GROUP_ID = System.getenv("KAFKA_GROUP_ID");
         // e.g. flume
         String KAFKA_TOPIC = System.getenv("KAFKA_TOPIC");
-
+        // e.g. http://localhost:8890/sparql-graph-crud-auth
+        String VIRTUOSO_HOST = System.getenv("VIRTUOSO_HOST");
+        // e.g. dba
+        String VIRTUOSO_USER = System.getenv("VIRTUOSO_USER");
+        // e.g. dba
+        String VIRTUOSO_PASS = System.getenv("VIRTUOSO_PASS");
+        // e.g. urn:sc6
+        String VIRTUOSO_DEFAULT_GRAPH = System.getenv("VIRTUOSO_DEFAULT_GRAPH");
+        
         SparkConf conf = new SparkConf()
                 .setAppName(APP_NAME)
                 .setSparkHome(SPARK_HOME)
@@ -68,11 +87,22 @@ public class App {
         
         input.foreachRDD((JavaPairRDD<String, byte[]> rdd) -> {
             /* usage example below: by flume pipeline definition rdd.key = fileName, rdd.value = file data as byte[] */
-            rdd.collect().forEach((Tuple2<String, byte[]> t) -> {
+            rdd.collect().forEach((Tuple2<String, byte[]> t) -> {                                 
                 try {
                     String fileName = t._1 != null ? t._1 : new String(MessageDigest.getInstance("MD5").digest((new Date()).toString().getBytes()));
-                    FileUtils.writeByteArrayToFile(new File(("/home/bde/".concat(fileName))), t._2);
-                } catch ( IOException | NoSuchAlgorithmException ex) {
+                    List<Statement> data = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName(fileName).transform(fileName, t._2);
+                    VirtuosoInserter inserter = new VirtuosoInserter(
+                        new URL(VIRTUOSO_HOST),
+                        new URIImpl(VIRTUOSO_DEFAULT_GRAPH),
+                        VIRTUOSO_USER, 
+                        VIRTUOSO_PASS
+                    );
+                    inserter.startRDF();
+                    for(Statement s : data){
+                        inserter.handleStatement(s);
+                    }
+                    inserter.endRDF();
+                } catch ( RDFHandlerException | MalformedURLException | NoSuchAlgorithmException | UnknownBudgetDataParserException | TransformationException ex) {
                     LOGGER.fatal(ex);
                 }
             });

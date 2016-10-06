@@ -10,4 +10,5 @@ import org.openrdf.model.Statement;
 public interface BudgetDataParser {    
     public List<Statement> transform(String fileName, byte[] file) throws TransformationException;
     public String getIdentifier();
+    public boolean canHandleByFileName(String fileName);
 }

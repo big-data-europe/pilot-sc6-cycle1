@@ -6,4 +6,5 @@ package eu.bde.sc6.budget.parser.api;
  */
 public interface BudgetDataParserRegistry {
     public BudgetDataParser getBudgetDataParser(String identifier) throws UnknownBudgetDataParserException;
+    public BudgetDataParser getBudgetDataParserForFileName(String fileName) throws UnknownBudgetDataParserException;
 }

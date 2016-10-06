@@ -34,6 +34,20 @@
             <artifactId>spark-streaming-kafka_2.10</artifactId>
             <version>${spark.version}</version>   
         </dependency>  
+        
+        
+        <!-- budgetDataParser -->
+        <dependency>
+            <groupId>eu.bde.sc6.budget.parser</groupId>
+            <artifactId>eu-bde-budget-data-parser</artifactId>
+            <version>1.0.0</version>   
+        </dependency>  
+        <dependency>
+            <groupId>eu.bde.virtuoso</groupId>
+            <artifactId>virtuoso-utils</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
