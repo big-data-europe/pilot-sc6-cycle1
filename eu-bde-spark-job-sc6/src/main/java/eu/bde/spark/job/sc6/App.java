@@ -4,8 +4,6 @@ import eu.bde.sc6.budget.parser.api.TransformationException;
 import eu.bde.sc6.budget.parser.api.UnknownBudgetDataParserException;
 import eu.bde.sc6.budget.parser.impl.BudgetDataParserRegistryImpl;
 import eu.bde.virtuoso.utils.VirtuosoInserter;
-import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -14,11 +12,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import kafka.serializer.DefaultDecoder;
 import kafka.serializer.StringDecoder;
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -31,10 +26,11 @@ import org.apache.spark.storage.StorageLevel;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.rio.RDFHandlerException;
+import org.slf4j.LoggerFactory;
 
 public class App {
     
-    final static Logger LOGGER = Logger.getLogger(App.class.getName());
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(App.class);
 
     //./spark-submit --class ${SPARK_APPLICATION_MAIN_CLASS} --master ${SPARK_MASTER_URL} ${SPARK_APPLICATION_JAR_LOCATION}
     public static void main(String[] args) {
@@ -86,10 +82,11 @@ public class App {
                 StringDecoder.class, DefaultDecoder.class, kafkaParams, topicMap, StorageLevel.MEMORY_ONLY());
         
         input.foreachRDD((JavaPairRDD<String, byte[]> rdd) -> {
-            /* usage example below: by flume pipeline definition rdd.key = fileName, rdd.value = file data as byte[] */
-            rdd.collect().forEach((Tuple2<String, byte[]> t) -> {                                 
+            /* usage example below: by flume pipeline definition rdd.key = fileName, rdd.value = file data as byte[] */            
+            rdd.collect().parallelStream().forEach((Tuple2<String, byte[]> t) -> {                                 
                 try {
                     String fileName = t._1 != null ? t._1 : new String(MessageDigest.getInstance("MD5").digest((new Date()).toString().getBytes()));
+                    LOG.info("parsing: " + fileName);
                     List<Statement> data = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName(fileName).transform(fileName, t._2);
                     VirtuosoInserter inserter = new VirtuosoInserter(
                         new URL(VIRTUOSO_HOST),
@@ -103,7 +100,7 @@ public class App {
                     }
                     inserter.endRDF();
                 } catch ( RDFHandlerException | MalformedURLException | NoSuchAlgorithmException | UnknownBudgetDataParserException | TransformationException ex) {
-                    LOGGER.fatal(ex);
+                    LOG.warn(("problematic file: " + t._1), ex);
                 }
             });
             return null;
