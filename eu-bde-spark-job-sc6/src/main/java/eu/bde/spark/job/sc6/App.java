@@ -69,6 +69,7 @@ public class App {
         
         
         JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(10000));
+        
 
         Map<String, String> kafkaParams = new HashMap<>();
         kafkaParams.put("metadata.broker.list", KAFKA_METADATA_BROKER_LIST);
@@ -78,6 +79,7 @@ public class App {
         Map<String, Integer> topicMap = new HashMap<>();
                              topicMap.put(KAFKA_TOPIC, 3);
         
+                             
         JavaPairDStream<String, byte[]> input = KafkaUtils.createStream(ssc, String.class, byte[].class,
                 StringDecoder.class, DefaultDecoder.class, kafkaParams, topicMap, StorageLevel.MEMORY_ONLY());
         

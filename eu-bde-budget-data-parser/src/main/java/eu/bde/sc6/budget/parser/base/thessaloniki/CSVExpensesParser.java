@@ -17,6 +17,7 @@ import org.apache.commons.csv.CSVParser;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.DCTERMS;
@@ -39,6 +40,7 @@ public class CSVExpensesParser implements BudgetDataParser {
         InputStreamReader inputStreamReader = null;
         ByteArrayInputStream byteArrayInputStream = null;
         List<Statement> data = new ArrayList<>();
+        Literal source = new LiteralImpl(fileName);
         try {
             byteArrayInputStream = new ByteArrayInputStream(file);
             inputStreamReader = new InputStreamReader(byteArrayInputStream, "UTF-16");
@@ -184,6 +186,20 @@ public class CSVExpensesParser implements BudgetDataParser {
                     data.add(new StatementImpl(instanceCommittedUps, RDF.TYPE, GOODRELATIONS.UNIT_PRICE_SPECIFICATION));
                     data.add(new StatementImpl(instanceCurrency, RDF.TYPE, ELOD.CURRENCY));
 
+                    /* source file as dcterms:source */
+                    
+                    data.add(new StatementImpl(instanceKAECustom, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceBudgetItem, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceSpendingItem, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceExpenseItem, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceCommittedItem, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceSpendingExpLine, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceExpenseExpLine, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceSpendingUps, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceBudgetUps, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceExpenseUps, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceCommittedUps, DCTERMS.SOURCE, source));                    
+                    
                     //Properties addition to Resources
                     data.add(new StatementImpl(instanceSpendingItem, ELOD.HAS_EXPENDITURE_LINE, instanceSpendingExpLine));
                     data.add(new StatementImpl(instanceExpenseItem, ELOD.HAS_EXPENDITURE_LINE, instanceExpenseExpLine));
