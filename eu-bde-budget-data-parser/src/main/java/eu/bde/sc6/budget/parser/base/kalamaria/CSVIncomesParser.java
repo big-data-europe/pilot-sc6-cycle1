@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
 import org.apache.commons.lang.StringUtils;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
@@ -41,7 +40,7 @@ public class CSVIncomesParser implements BudgetDataParser {
     
     
     public List<Statement> transform(String fileName, byte[] file, Set<Integer> unparseableLines) throws TransformationException {
-        CSVParser parser = null;
+        
         ByteArrayInputStream byteArrayInputStream = null;
         BufferedReader inputBufferedReader = null;
         InputStreamReader inputStreamReader = null;
@@ -57,8 +56,8 @@ public class CSVIncomesParser implements BudgetDataParser {
             inputStreamReader = new InputStreamReader(byteArrayInputStream, "UTF-16");
             inputBufferedReader = new BufferedReader(inputStreamReader);
             
-            
             final AtomicInteger count = new AtomicInteger();
+            
             inputBufferedReader.lines().forEach(line -> {
                 
                 String[] columns = line.split(Character.toString(csvFormat.getDelimiter()));
@@ -246,9 +245,9 @@ public class CSVIncomesParser implements BudgetDataParser {
                     byteArrayInputStream.close();
                 } catch (IOException ex) {}
             }   
-            if(parser != null){
+            if(inputBufferedReader != null){
                 try {
-                    parser.close();
+                    inputBufferedReader.close();
                 } catch (IOException ex) {}
             }
         }
