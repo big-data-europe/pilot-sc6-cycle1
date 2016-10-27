@@ -89,7 +89,10 @@ public class App {
                 try {
                     String fileName = t._1 != null ? t._1 : new String(MessageDigest.getInstance("MD5").digest((new Date()).toString().getBytes()));
                     LOG.info("parsing: " + fileName);
+                    
                     List<Statement> data = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName(fileName).transform(fileName, t._2);
+                    
+                    
                     VirtuosoInserter inserter = new VirtuosoInserter(
                         new URL(VIRTUOSO_HOST),
                         new URIImpl(VIRTUOSO_DEFAULT_GRAPH),

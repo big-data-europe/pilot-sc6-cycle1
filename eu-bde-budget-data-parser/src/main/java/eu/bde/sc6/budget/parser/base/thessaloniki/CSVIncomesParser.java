@@ -35,10 +35,11 @@ public class CSVIncomesParser implements BudgetDataParser {
     
     private final static String IDENTIFIER = ".*(thessaloniki/csv/incomes).*";
     private final static Pattern FILENAME_DATE_PATTERN = Pattern.compile("([0-9]{4})_([0-9]{2})_([0-9]{2}).*");
-    private final static String INSTANCE_NAMESPACE = "http://linkedeconomy.org/resource/";
+    private final static String INSTANCE_NAMESPACE = "http://linkedeconomy.org/resource/thessaloniki/incomes/";
     
     @Override
     public List<Statement> transform(String fileName, byte[] file) throws TransformationException {
+
         CSVParser parser = null;
         InputStreamReader inputStreamReader = null;
         ByteArrayInputStream byteArrayInputStream = null;

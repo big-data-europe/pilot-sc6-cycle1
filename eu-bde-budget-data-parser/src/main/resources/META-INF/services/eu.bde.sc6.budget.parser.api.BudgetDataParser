@@ -1,2 +1,4 @@
 eu.bde.sc6.budget.parser.base.thessaloniki.CSVIncomesParser
 eu.bde.sc6.budget.parser.base.thessaloniki.CSVExpensesParser
+eu.bde.sc6.budget.parser.base.kalamaria.CSVIncomesParser
+eu.bde.sc6.budget.parser.base.kalamaria.CSVExpensesParser

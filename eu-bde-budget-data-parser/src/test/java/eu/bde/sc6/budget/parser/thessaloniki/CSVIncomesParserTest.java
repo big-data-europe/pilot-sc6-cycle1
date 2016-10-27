@@ -1,4 +1,4 @@
-package eu.bde.sc6.budget.parser;
+package eu.bde.sc6.budget.parser.thessaloniki;
 
 import eu.bde.sc6.budget.parser.api.BudgetDataParser;
 import eu.bde.sc6.budget.parser.api.BudgetDataParserRegistry;
