@@ -31,7 +31,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 public class CSVExpensesParser implements BudgetDataParser {
     
     private final static String IDENTIFIER = ".*(thessaloniki/csv/expenses).*";
-    private final static Pattern FILENAME_DATE_PATTERN = Pattern.compile("([0-9]{4})_([0-9]{2})_([0-9]{2}).*");
+    private final static Pattern FILENAME_DATE_PATTERN = Pattern.compile(".*([0-9]{4})_([0-9]{2})_([0-9]{2}).*");
     private final static String INSTANCE_NAMESPACE = "http://linkedeconomy.org/resource/thessaloniki/expenses/";
         
     @Override
@@ -107,61 +107,61 @@ public class CSVExpensesParser implements BudgetDataParser {
                             + "/" + fourDigit + "/" + fifthLevelOfKae1 + "/" + fifthLevelOfKae2);
 
                     URI instanceBudgetItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "BudgetItem/"
-                            + year.toString() + "/" + month + "-" + year + "/"
+                            + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);  
                     
                     URI instanceSpendingItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "SpendingItem/"
-                            + year.toString() + "/" + month + "-" + year + "/"
+                            + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);
 
                     URI instanceExpenseItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "ExpenseApprovalItem/"
-                            + year.toString() + "/" + month + "-" + year + "/"
+                            + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);
 
                     URI instanceCommittedItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "CommittedItem/"
-                            + year.toString() + "/" + month + "-" + year + "/"
+                            + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);
 
                     URI instanceSpendingExpLine = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "ExpenditureLine/"
-                            + "SpendingItem/" + year.toString() + "/" + month + "-" + year + "/"
+                            + "SpendingItem/" + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);
 
                     URI instanceExpenseExpLine = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "ExpenditureLine/"
-                            + "ExpenseApprovalItem/" + year.toString() + "/" + month + "-" + year + "/"
+                            + "ExpenseApprovalItem/" + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);
 
                     URI instanceBudgetUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                            + "BudgetItem/" + year.toString() + "/" + month + "-" + year + "/"
+                            + "BudgetItem/" + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);
 
                     URI instanceSpendingUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                            + "SpendingItem/" + year.toString() + "/" + month + "-" + year + "/"
+                            + "SpendingItem/" + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);
 
                     URI instanceExpenseUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                            + "ExpenseApprovalItem/" + year.toString() + "/" + month + "-" + year + "/"
+                            + "ExpenseApprovalItem/" + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);
 
                     URI instanceCommittedUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                            + "CommittedItem/" + year.toString() + "/" + month + "-" + year + "/"
+                            + "CommittedItem/" + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);
@@ -239,10 +239,10 @@ public class CSVExpensesParser implements BudgetDataParser {
                     data.add(new StatementImpl(instanceExpenseItem, ELOD.FINANCIAL_YEAR, ValueFactoryImpl.getInstance().createLiteral(year, XMLSchema.GYEAR)));
                     data.add(new StatementImpl(instanceCommittedItem, ELOD.FINANCIAL_YEAR, ValueFactoryImpl.getInstance().createLiteral(year, XMLSchema.GYEAR)));
                     
-                    data.add(new StatementImpl(instanceBudgetItem, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(budgettNew, XMLSchema.DECIMAL)));
-                    data.add(new StatementImpl(instanceSpendingItem, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(collectNew, XMLSchema.DECIMAL)));
-                    data.add(new StatementImpl(instanceExpenseItem, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(approvalNew, XMLSchema.DECIMAL)));
-                    data.add(new StatementImpl(instanceCommittedItem, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(committedNew, XMLSchema.DECIMAL)));
+                    data.add(new StatementImpl(instanceBudgetUps, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(budgettNew, XMLSchema.DECIMAL)));
+                    data.add(new StatementImpl(instanceSpendingUps, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(collectNew, XMLSchema.DECIMAL)));
+                    data.add(new StatementImpl(instanceExpenseUps, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(approvalNew, XMLSchema.DECIMAL)));
+                    data.add(new StatementImpl(instanceCommittedUps, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(committedNew, XMLSchema.DECIMAL)));
                     
                     data.add(new StatementImpl(instanceBudgetUps, ELOD.HAS_CURRENCY, instanceCurrency));
                     data.add(new StatementImpl(instanceSpendingUps, ELOD.HAS_CURRENCY, instanceCurrency));

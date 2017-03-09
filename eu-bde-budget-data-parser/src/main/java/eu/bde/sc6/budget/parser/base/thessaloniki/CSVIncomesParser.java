@@ -21,6 +21,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.DCTERMS;
@@ -34,7 +35,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 public class CSVIncomesParser implements BudgetDataParser {
     
     private final static String IDENTIFIER = ".*(thessaloniki/csv/incomes).*";
-    private final static Pattern FILENAME_DATE_PATTERN = Pattern.compile("([0-9]{4})_([0-9]{2})_([0-9]{2}).*");
+    private final static Pattern FILENAME_DATE_PATTERN = Pattern.compile(".*([0-9]{4})_([0-9]{2})_([0-9]{2}).*");
     private final static String INSTANCE_NAMESPACE = "http://linkedeconomy.org/resource/thessaloniki/incomes/";
     
     @Override
@@ -43,7 +44,8 @@ public class CSVIncomesParser implements BudgetDataParser {
         CSVParser parser = null;
         InputStreamReader inputStreamReader = null;
         ByteArrayInputStream byteArrayInputStream = null;
-        List<Statement> data = new ArrayList<>();        
+        List<Statement> data = new ArrayList<>();    
+        Literal source = new LiteralImpl(fileName);
         try {
             byteArrayInputStream = new ByteArrayInputStream(file);
             inputStreamReader = new InputStreamReader(byteArrayInputStream, "UTF-16");
@@ -104,37 +106,37 @@ public class CSVIncomesParser implements BudgetDataParser {
                             + "/" + fourDigit + "/" + fifthLevelOfKae1 + "/" + fifthLevelOfKae2);
                     
                     URI instanceBudgetItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "BudgetItem/"
-                            + year.toString() + "/" + month + "-" + year + "/"
+                            + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i); 
                     
                     URI instanceCollectedItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "CollectedItem/"
-                            + year.toString() + "/" + month + "-" + year + "/"
+                            + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);  
                     
                     URI instanceRevenueRecognizedItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "RevenueRecognizedItem/"
-                            + year.toString() + "/" + month + "-" + year + "/"
+                            + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);
 
                     URI instanceBudgetUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                            + "BudgetItem/" + year.toString() + "/" + month + "-" + year + "/"
+                            + "BudgetItem/" + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);
 
                     URI instanceCollectedUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                            + "CollectedItem/" + year.toString() + "/" + month + "-" + year + "/"
+                            + "CollectedItem/" + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);  
                     
                     URI instanceRevenueRecognizedUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                            + "RevenueRecognizedItem/" + year.toString() + "/" + month + "-" + year + "/"
+                            + "RevenueRecognizedItem/" + year.toString() + "/" + day + "-" + month + "/"
                             + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                             + fifthLevelOfKae1 + "/" + fifthLevelOfKae2 + "/"
                             + i);
@@ -153,6 +155,17 @@ public class CSVIncomesParser implements BudgetDataParser {
                     data.add(new StatementImpl(instanceRevenueRecognizedUps, RDF.TYPE, GOODRELATIONS.UNIT_PRICE_SPECIFICATION));
                     data.add(new StatementImpl(instanceCurrency, RDF.TYPE, ELOD.CURRENCY));
                     
+                    /* source file as dcterms:source */
+                    
+                    data.add(new StatementImpl(instanceKAECustom, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceBudgetItem, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceCollectedItem, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceRevenueRecognizedItem, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceCollectedUps, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceBudgetUps, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceRevenueRecognizedUps, DCTERMS.SOURCE, source));
+                    data.add(new StatementImpl(instanceCurrency, DCTERMS.SOURCE, source));
+                    
                     //Properties addition to Resources
                     data.add(new StatementImpl(instanceBudgetItem, ELOD.SELLER, instanceOrganization));
                     data.add(new StatementImpl(instanceCollectedItem, ELOD.SELLER, instanceOrganization));
@@ -169,9 +182,7 @@ public class CSVIncomesParser implements BudgetDataParser {
                     data.add(new StatementImpl(instanceBudgetItem, ELOD.HAS_CUSTOM_KAE, instanceKAECustom));
                     data.add(new StatementImpl(instanceCollectedItem, ELOD.HAS_CUSTOM_KAE, instanceKAECustom));
                     data.add(new StatementImpl(instanceRevenueRecognizedItem, ELOD.HAS_CUSTOM_KAE, instanceKAECustom));
-                    
-                    data.add(new StatementImpl(instanceRevenueRecognizedItem, ELOD.HAS_CUSTOM_KAE, instanceKAECustom));
-                    
+                                        
                     data.add(new StatementImpl(instanceBudgetItem, DCTERMS.ISSUED, dateTime));
                     data.add(new StatementImpl(instanceCollectedItem, DCTERMS.ISSUED, dateTime));
                     data.add(new StatementImpl(instanceRevenueRecognizedItem, DCTERMS.ISSUED, dateTime));
@@ -184,7 +195,7 @@ public class CSVIncomesParser implements BudgetDataParser {
                     data.add(new StatementImpl(instanceCollectedItem, ELOD.FINANCIAL_YEAR, ValueFactoryImpl.getInstance().createLiteral(year, XMLSchema.GYEAR)));
                     data.add(new StatementImpl(instanceRevenueRecognizedItem, ELOD.FINANCIAL_YEAR, ValueFactoryImpl.getInstance().createLiteral(year, XMLSchema.GYEAR)));
                     
-                    data.add(new StatementImpl(instanceBudgetItem, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(budgettNew,XMLSchema.DECIMAL)));
+                    data.add(new StatementImpl(instanceBudgetUps, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(budgettNew,XMLSchema.DECIMAL)));
                     data.add(new StatementImpl(instanceCollectedUps, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(collectNew,XMLSchema.DECIMAL)));                    
                     data.add(new StatementImpl(instanceRevenueRecognizedUps, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(approvalNew,XMLSchema.DECIMAL)));                    
                     

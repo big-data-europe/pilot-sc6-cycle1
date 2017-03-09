@@ -81,5 +81,11 @@
             <version>1.4</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>eu.bde.virtuoso</groupId>
+            <artifactId>virtuoso-utils</artifactId>
+            <version>1.0.0</version>
+            <scope>test</scope>
+        </dependency>        
     </dependencies>
 </project>

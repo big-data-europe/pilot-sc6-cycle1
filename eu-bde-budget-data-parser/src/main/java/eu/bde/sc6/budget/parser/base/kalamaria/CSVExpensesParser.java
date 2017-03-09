@@ -5,6 +5,7 @@ import eu.bde.sc6.budget.parser.api.TransformationException;
 import eu.bde.sc6.budget.parser.base.thessaloniki.CSVParserUtils;
 import eu.bde.sc6.budget.parser.vocabulary.ELOD;
 import eu.bde.sc6.budget.parser.vocabulary.GOODRELATIONS;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,32 +34,45 @@ import org.openrdf.model.vocabulary.XMLSchema;
 public class CSVExpensesParser implements BudgetDataParser {
     
     private final static String IDENTIFIER = ".*(kalamaria/csv/expenses).*";
-    private final static Pattern FILENAME_DATE_PATTERN = Pattern.compile("([0-9]{4})_([0-9]{2})_([0-9]{2}).*");
+    private final static Pattern FILENAME_DATE_PATTERN = Pattern.compile(".*([0-9]{4})_([0-9]{2})_([0-9]{2}).*");
     private final static String INSTANCE_NAMESPACE = "http://linkedeconomy.org/resource/kalamaria/expenses/";
     
     @Override
     public List<Statement> transform(String fileName, byte[] file) throws TransformationException {
-        CSVParser parser = null;
+        
         InputStreamReader inputStreamReader = null;
+        BufferedReader inputBufferedReader = null;
         ByteArrayInputStream byteArrayInputStream = null;
+        
+        final CSVFormat csvFormat = CSVFormat.DEFAULT.withDelimiter(';');
         List<Statement> data = new ArrayList<>();
         Literal source = new LiteralImpl(fileName);
         try {
             byteArrayInputStream = new ByteArrayInputStream(file);
-            inputStreamReader = new InputStreamReader(byteArrayInputStream, "UTF-16");
-            parser = new CSVParser(inputStreamReader, CSVFormat.DEFAULT.withDelimiter(';'));
-                        
-            final AtomicInteger count = new AtomicInteger();
+            inputStreamReader = new InputStreamReader(byteArrayInputStream, "UTF-16BE");
+            inputBufferedReader = new BufferedReader(inputStreamReader);
 
-            parser.forEach( csvRecord -> {
+            final AtomicInteger count = new AtomicInteger();
+            String line;
+            String lineCache = null;
+            while((line = inputBufferedReader.readLine())!=null){
+                line = lineCache!=null?lineCache.concat(line):line;
+                String[] columns = line.split(Character.toString(csvFormat.getDelimiter()));
+                if(columns.length<9){
+                    lineCache = line;
+                    continue;
+                } else { lineCache = null; }
                 
-                String kae = csvRecord.get(1);
+                String kae = columns[0];
+                
                 if(StringUtils.countMatches(kae, ".") != 0){
-                    String subject = csvRecord.get(2);
-                    String budgetformatted = csvRecord.get(6);
-                    String committed = csvRecord.get(7);
-                    String approval = csvRecord.get(8);
-                    String spending = csvRecord.get(9);
+
+                    //System.out.println("columns-count:"+columns.length);
+                    String subject = columns[1];
+                    String budgetformatted = columns[5];
+                    String committed = columns[6];
+                    String approval = columns[7];
+                    String spending = columns[8];
                     
                     if (!kae.contains("Κ")) {
                         String customKae = kae;
@@ -115,60 +129,60 @@ public class CSVExpensesParser implements BudgetDataParser {
                                     + "/" + fourDigit + "/" + kaeService);
 
                             URI instanceBudgetItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "BudgetItem/"
-                                    + year.toString() + "/" + month + "-" + year + "/"
+                                    + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/" + i);  
 
                             URI instanceSpendingItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "SpendingItem/"
-                                    + year.toString() + "/" + month + "-" + year + "/"
+                                    + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/" 
                                     + i);
 
                             URI instanceExpenseItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "ExpenseApprovalItem/"
-                                    + year.toString() + "/" + month + "-" + year + "/"
+                                    + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/" 
                                     + i);
 
                             URI instanceCommittedItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "CommittedItem/"
-                                    + year.toString() + "/" + month + "-" + year + "/"
+                                    + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/" 
                                     + i);
 
                             URI instanceSpendingExpLine = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "ExpenditureLine/"
-                                    + "SpendingItem/" + year.toString() + "/" + month + "-" + year + "/"
+                                    + "SpendingItem/" + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/" 
                                     + i);
 
                             URI instanceExpenseExpLine = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "ExpenditureLine/"
-                                    + "ExpenseApprovalItem/" + year.toString() + "/" + month + "-" + year + "/"
+                                    + "ExpenseApprovalItem/" + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/" 
                                     + i);
 
                             URI instanceBudgetUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                                    + "BudgetItem/" + year.toString() + "/" + month + "-" + year + "/"
+                                    + "BudgetItem/" + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/" 
                                     + i);
 
                             URI instanceSpendingUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                                    + "SpendingItem/" + year.toString() + "/" + month + "-" + year + "/"
+                                    + "SpendingItem/" + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/" 
                                     + i);
 
                             URI instanceExpenseUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                                    + "ExpenseApprovalItem/" + year.toString() + "/" + month + "-" + year + "/"
+                                    + "ExpenseApprovalItem/" + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/"
                                     + i);
 
                             URI instanceCommittedUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                                    + "CommittedItem/" + year.toString() + "/" + month + "-" + year + "/"
+                                    + "CommittedItem/" + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/"
                                     + i);
@@ -246,10 +260,10 @@ public class CSVExpensesParser implements BudgetDataParser {
                             data.add(new StatementImpl(instanceExpenseItem, ELOD.FINANCIAL_YEAR, ValueFactoryImpl.getInstance().createLiteral(year, XMLSchema.GYEAR)));
                             data.add(new StatementImpl(instanceCommittedItem, ELOD.FINANCIAL_YEAR, ValueFactoryImpl.getInstance().createLiteral(year, XMLSchema.GYEAR)));
 
-                            data.add(new StatementImpl(instanceBudgetItem, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(budgettNew, XMLSchema.DECIMAL)));
-                            data.add(new StatementImpl(instanceSpendingItem, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(collectNew, XMLSchema.DECIMAL)));
-                            data.add(new StatementImpl(instanceExpenseItem, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(approvalNew, XMLSchema.DECIMAL)));
-                            data.add(new StatementImpl(instanceCommittedItem, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(committedNew, XMLSchema.DECIMAL)));
+                            data.add(new StatementImpl(instanceBudgetUps, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(budgettNew, XMLSchema.DECIMAL)));
+                            data.add(new StatementImpl(instanceSpendingUps, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(collectNew, XMLSchema.DECIMAL)));
+                            data.add(new StatementImpl(instanceExpenseUps, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(approvalNew, XMLSchema.DECIMAL)));
+                            data.add(new StatementImpl(instanceCommittedUps, GOODRELATIONS.HAS_CURRENCY_VALUE, ValueFactoryImpl.getInstance().createLiteral(committedNew, XMLSchema.DECIMAL)));
 
                             data.add(new StatementImpl(instanceBudgetUps, ELOD.HAS_CURRENCY, instanceCurrency));
                             data.add(new StatementImpl(instanceSpendingUps, ELOD.HAS_CURRENCY, instanceCurrency));
@@ -261,7 +275,7 @@ public class CSVExpensesParser implements BudgetDataParser {
                         }
                     }
                 }
-            });
+            }//);
             
         } catch (IOException ex) {
             throw new TransformationException(ex);
@@ -276,9 +290,9 @@ public class CSVExpensesParser implements BudgetDataParser {
                     byteArrayInputStream.close();
                 } catch (IOException ex) {}
             }   
-            if(parser != null){
+            if(inputBufferedReader != null){
                 try {
-                    parser.close();
+                    inputBufferedReader.close();
                 } catch (IOException ex) {}
             }
         }

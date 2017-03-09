@@ -35,7 +35,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 public class CSVIncomesParser implements BudgetDataParser {
     
     private final static String IDENTIFIER = ".*(kalamaria/csv/incomes).*";
-    private final static Pattern FILENAME_DATE_PATTERN = Pattern.compile("([0-9]{4})_([0-9]{2})_([0-9]{2}).*");
+    private final static Pattern FILENAME_DATE_PATTERN = Pattern.compile(".*([0-9]{4})_([0-9]{2})_([0-9]{2}).*");
     private final static String INSTANCE_NAMESPACE = "http://linkedeconomy.org/resource/kalamaria/incomes/";
     
     
@@ -57,25 +57,29 @@ public class CSVIncomesParser implements BudgetDataParser {
             inputBufferedReader = new BufferedReader(inputStreamReader);
             
             final AtomicInteger count = new AtomicInteger();
-            
-            inputBufferedReader.lines().forEach(line -> {
-                
+            String line;
+            String lineCache = null;
+            while((line = inputBufferedReader.readLine())!=null){
+                line = lineCache!=null?lineCache.concat(line):line;
                 String[] columns = line.split(Character.toString(csvFormat.getDelimiter()));
+                if(columns.length<9){
+                    lineCache = line;
+                    continue;
+                } else { lineCache = null; }
+           // }
+            //inputBufferedReader.lines().forEach(line -> {
+                
+             //   String[] columns = line.split("\";\"");
 
                 String kae = columns[0];
                 
                 if(StringUtils.countMatches(kae, ".") > 0){
                     
-                    String subject = "";
-                    String budgetformatted = "";
-                    String confirmed = "";
-                    String collected = "";
+                    String subject = columns[1];
+                    String budgetformatted = columns[5];
+                    String confirmed = columns[6];
+                    String collected = fileName.contains("2015")?columns[8]:columns[7];
                     
-                        subject = columns[1];                    
-                        budgetformatted = columns[5];
-                        confirmed = columns[6];
-                        /* todo: check columns */
-                        collected = fileName.contains("2015")?columns[8]:columns[7];
                     if (!kae.contains("Κ")) {
                         
                         String customKae = kae;
@@ -119,43 +123,43 @@ public class CSVIncomesParser implements BudgetDataParser {
                             
                             //Creation of Resources
                             URI instanceKAE = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "KAE/"
-                                    + year.toString() + "/Expense/" + oneDigit + "/" + twoDigit + "/" + threeDigit
+                                    + year.toString() + "/Income/" + oneDigit + "/" + twoDigit + "/" + threeDigit
                                     + "/" + fourDigit);
 
                             URI instanceKAECustom = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "KAE/"
-                                    + year.toString() + "/Expense/" + oneDigit + "/" + twoDigit + "/" + threeDigit
+                                    + year.toString() + "/Income/" + oneDigit + "/" + twoDigit + "/" + threeDigit
                                     + "/" + fourDigit + "/" + kaeService);
                             
                             URI instanceBudgetItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "BudgetItem/"
-                                    + year.toString() + "/" + month + "-" + year + "/"
+                                    + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/"
                                     + i); 
                     
                             URI instanceCollectedItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "CollectedItem/"
-                                    + year.toString() + "/" + month + "-" + year + "/"
+                                    + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/" + i);  
 
                             URI instanceRevenueRecognizedItem = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "RevenueRecognizedItem/"
-                                    + year.toString() + "/" + month + "-" + year + "/"
+                                    + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/" 
                                     + i);
 
                             URI instanceBudgetUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                                    + "BudgetItem/" + year.toString() + "/" + month + "-" + year + "/"
+                                    + "BudgetItem/" + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/"
                                     + i);
                             
                             URI instanceCollectedUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                                    + "CollectedItem/" + year.toString() + "/" + month + "-" + year + "/"
+                                    + "CollectedItem/" + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/"
                                     + i);
                             URI instanceRevenueRecognizedUps = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "UnitPriceSpecification/"
-                                    + "RevenueRecognizedItem/" + year.toString() + "/" + month + "-" + year + "/"
+                                    + "RevenueRecognizedItem/" + year.toString() + "/" + day + "-" + month + "/"
                                     + oneDigit + "/" + twoDigit + "/" + threeDigit + "/" + fourDigit + "/"
                                     + kaeService + "/"
                                     + i);
@@ -194,8 +198,8 @@ public class CSVIncomesParser implements BudgetDataParser {
                             
 
                             data.add(new StatementImpl(instanceBudgetItem, ELOD.PRICE, instanceBudgetUps));
-                            data.add(new StatementImpl(instanceCollectedItem, ELOD.AMOUNT, instanceCollectedUps));
-                            data.add(new StatementImpl(instanceRevenueRecognizedItem, ELOD.AMOUNT, instanceRevenueRecognizedUps));
+                            data.add(new StatementImpl(instanceCollectedItem, ELOD.PRICE, instanceCollectedUps));
+                            data.add(new StatementImpl(instanceRevenueRecognizedItem, ELOD.PRICE, instanceRevenueRecognizedUps));
                             
                             data.add(new StatementImpl(instanceBudgetItem, ELOD.HAS_KAE, instanceKAE));
                             data.add(new StatementImpl(instanceCollectedItem, ELOD.HAS_KAE, instanceKAE));
@@ -230,7 +234,7 @@ public class CSVIncomesParser implements BudgetDataParser {
                         }
                     }
                 }                
-            });
+            }//);
             
         } catch (IOException ex) {
             throw new TransformationException(ex);

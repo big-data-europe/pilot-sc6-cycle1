@@ -58,6 +58,8 @@ public class App {
         String VIRTUOSO_PASS = System.getenv("VIRTUOSO_PASS");
         // e.g. urn:sc6
         String VIRTUOSO_DEFAULT_GRAPH = System.getenv("VIRTUOSO_DEFAULT_GRAPH");
+        // e.g. 10000 (miliseconds)
+        int DURATION = System.getenv("SPARK_DURATION")!=null?Integer.parseInt(System.getenv("SPARK_DURATION")):5000;
         
         SparkConf conf = new SparkConf()
                 .setAppName(APP_NAME)
@@ -68,14 +70,16 @@ public class App {
         JavaSparkContext sc = new JavaSparkContext(conf);
         
         
-        JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(10000));
+        JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(DURATION));
         
 
         Map<String, String> kafkaParams = new HashMap<>();
-        kafkaParams.put("metadata.broker.list", KAFKA_METADATA_BROKER_LIST);
-        kafkaParams.put("zk.connect", ZK_CONNECT);
-        kafkaParams.put("zookeeper.connect", ZK_CONNECT);
-        kafkaParams.put("group.id", KAFKA_GROUP_ID);
+                            kafkaParams.put("metadata.broker.list", KAFKA_METADATA_BROKER_LIST);
+                            kafkaParams.put("zk.connect", ZK_CONNECT);
+                            kafkaParams.put("zookeeper.connect", ZK_CONNECT);
+                            kafkaParams.put("group.id", KAFKA_GROUP_ID);
+                            kafkaParams.put("max.partition.fetch.bytes", "42000000");
+                            kafkaParams.put("fetch.message.max.bytes", "42000000");        
         Map<String, Integer> topicMap = new HashMap<>();
                              topicMap.put(KAFKA_TOPIC, 3);
         
@@ -88,10 +92,8 @@ public class App {
             rdd.collect().parallelStream().forEach((Tuple2<String, byte[]> t) -> {                                 
                 try {
                     String fileName = t._1 != null ? t._1 : new String(MessageDigest.getInstance("MD5").digest((new Date()).toString().getBytes()));
-                    LOG.info("parsing: " + fileName);
-                    
+                    LOG.warn("parsing: " + fileName);                    
                     List<Statement> data = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName(fileName).transform(fileName, t._2);
-                    
                     
                     VirtuosoInserter inserter = new VirtuosoInserter(
                         new URL(VIRTUOSO_HOST),
