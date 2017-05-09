@@ -58,7 +58,7 @@ import org.openrdf.rio.RDFHandlerException;
     //@Test
     public void testParseSimpleFile() throws UnknownBudgetDataParserException, IOException, TransformationException{
         String fileName = "2016_06_30_21.50.csv";
-        byte[] file = IOUtils.toByteArray(AthensCSVParserTest.class.getResourceAsStream("/kalamaria/incomes/".concat(fileName)));
+        byte[] file = IOUtils.toByteArray(KalamariaCSVParserTest.class.getResourceAsStream("/kalamaria/incomes/".concat(fileName)));
         BudgetDataParser parser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParser(".*(kalamaria/csv/incomes).*");
         parser.transform(fileName, file).forEach( s -> {
             System.out.println(s);
