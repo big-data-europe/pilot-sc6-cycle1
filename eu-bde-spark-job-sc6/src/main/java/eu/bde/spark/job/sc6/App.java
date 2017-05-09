@@ -95,29 +95,22 @@ public class App {
             /* usage example below: by flume pipeline definition rdd.key = fileName, rdd.value = file data as byte[] */            
             rdd.collect().parallelStream().forEach((Tuple2<String, byte[]> t) -> {                                 
                 try {
-                    String fileName = t._1 != null ? t._1 : new String(MessageDigest.getInstance("MD5").digest((new Date()).toString().getBytes()));
-                    LOG.warn("parsing: " + fileName); 
-                    if(!DEBUG){
-                        List<Statement> data = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName(fileName).transform(fileName, t._2);
-
-                        VirtuosoInserter inserter = new VirtuosoInserter(
-                            new URL(VIRTUOSO_HOST),
-                            new URIImpl(VIRTUOSO_DEFAULT_GRAPH),
-                            VIRTUOSO_USER, 
-                            VIRTUOSO_PASS
-                        );
-                        inserter.startRDF();
-                        for(Statement s : data){
-                            inserter.handleStatement(s);
-                        }
-                        inserter.endRDF();
-                    } else {
-                        try {
-                            BudgetDataParser parser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName(fileName);
-                            LOG.warn("Available Parser: " + parser);
-                        } catch(Exception e){
-                            LOG.warn(fileName, e);
-                        }
+                    String fileName = t._1 != null ? 
+                        t._1 : 
+                        new String(MessageDigest.getInstance("MD5").digest((new Date()).toString().getBytes()));
+                    LOG.warn("parsing: " + fileName);                    
+                    List<Statement> data = BudgetDataParserRegistryImpl.getInstance()
+                        .getBudgetDataParserForFileName(fileName).transform(fileName, t._2);
+                    
+                    VirtuosoInserter inserter = new VirtuosoInserter(
+                        new URL(VIRTUOSO_HOST),
+                        new URIImpl(VIRTUOSO_DEFAULT_GRAPH),
+                        VIRTUOSO_USER, 
+                        VIRTUOSO_PASS
+                    );
+                    inserter.startRDF();
+                    for(Statement s : data){
+                        inserter.handleStatement(s);
                     }
                 } catch ( RDFHandlerException | MalformedURLException | NoSuchAlgorithmException | UnknownBudgetDataParserException | TransformationException ex) {
                     LOG.warn(("problematic file: " + t._1), ex);
