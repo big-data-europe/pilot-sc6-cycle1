@@ -32,7 +32,8 @@ import org.openrdf.rio.RDFHandlerException;
  *
  * @author turnguard
  */
-public class KalamariaCSVParserTest  extends VirtuosoCapability  {
+//public class KalamariaCSVParserTest  extends VirtuosoCapability  {
+ public class KalamariaCSVParserTest  {
     
     public KalamariaCSVParserTest() throws MalformedURLException {
         super();
@@ -70,13 +71,13 @@ public class KalamariaCSVParserTest  extends VirtuosoCapability  {
                     if(file.toString().contains("2016")){
                         List<Statement> states = parser.transform(file.toString(), Files.readAllBytes(file));
                         System.out.println(file.toString() + " " + states.size());
-                        uploadToVirtuoso(states);                    
+                        //uploadToVirtuoso(states);                    
                     }
                 } catch (TransformationException | RuntimeException ex) {
                     System.out.println("PROBLEMATIC FILE: " + file.toAbsolutePath()); 
                     ex.printStackTrace();
-                } catch (RDFHandlerException ex) {
-                    Logger.getLogger(ThessalonikiCSVParserTest.class.getName()).log(Level.SEVERE, null, ex);
+                //} catch (RDFHandlerException ex) {
+                //    Logger.getLogger(ThessalonikiCSVParserTest.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 return FileVisitResult.CONTINUE;
             }
@@ -99,12 +100,12 @@ public class KalamariaCSVParserTest  extends VirtuosoCapability  {
                     if(file.toString().contains("2016")){                    
                         List<Statement> states = parser.transform(file.toString(), Files.readAllBytes(file));
                         System.out.println(file.toString() + " " + states.size());
-                        uploadToVirtuoso(states);            
+                        //uploadToVirtuoso(states);            
                     }
                 } catch (TransformationException | RuntimeException ex) {
                     System.out.println("PROBLEMATIC FILE: " + file.toAbsolutePath());                    
-                } catch (RDFHandlerException ex) {
-                    Logger.getLogger(ThessalonikiCSVParserTest.class.getName()).log(Level.SEVERE, null, ex);
+                //} catch (RDFHandlerException ex) {
+                //    Logger.getLogger(ThessalonikiCSVParserTest.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 return FileVisitResult.CONTINUE;
             }

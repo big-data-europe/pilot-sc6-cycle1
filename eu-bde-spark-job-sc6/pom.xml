@@ -9,10 +9,28 @@
 
     <name>eu-bde-spark-job-sc6</name>
     <properties>
-        <spark.version>1.5.1</spark.version>  
+        <!--<spark.version>1.5.1</spark.version>  -->
+        <spark.version>2.1.0</spark.version>
+        <!--<spark.stream.kafka.version>1.6.2</spark.stream.kafka.version>  -->
+        <spark.stream.kafka.version>2.0.0</spark.stream.kafka.version>  
+        
     </properties>
   
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>http://central.maven.org/maven2/</url>
+        </repository>
+    </repositories>
+    
     <dependencies>
+        
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.10</artifactId>
+            <version>${spark.version}</version>
+            <!--    <scope>provided</scope>-->
+        </dependency>
         
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -31,8 +49,8 @@
         
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming-kafka_2.10</artifactId>
-            <version>${spark.version}</version>   
+            <artifactId>spark-streaming-kafka-0-8_2.10</artifactId>
+            <version>${spark.stream.kafka.version}</version>   
         </dependency>  
         
         

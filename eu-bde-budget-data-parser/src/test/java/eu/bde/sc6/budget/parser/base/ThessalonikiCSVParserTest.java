@@ -26,7 +26,8 @@ import org.openrdf.rio.RDFHandlerException;
  *
  * @author turnguard
  */
-public class ThessalonikiCSVParserTest extends VirtuosoCapability {
+//public class ThessalonikiCSVParserTest extends VirtuosoCapability {
+public class ThessalonikiCSVParserTest {
 
                     
     public ThessalonikiCSVParserTest() throws MalformedURLException {
@@ -64,11 +65,11 @@ public class ThessalonikiCSVParserTest extends VirtuosoCapability {
                 try {
                     List<Statement> states = parser.transform(file.toString(), Files.readAllBytes(file));
                     System.out.println(file.toString() + " " + states.size());
-                    uploadToVirtuoso(states);
+                    //uploadToVirtuoso(states);
                 } catch (TransformationException | RuntimeException ex) {
                     System.out.println("PROBLEMATIC FILE: " + file.toAbsolutePath());                    
-                } catch (RDFHandlerException ex) {
-                    Logger.getLogger(ThessalonikiCSVParserTest.class.getName()).log(Level.SEVERE, null, ex);
+                //} catch (RDFHandlerException ex) {
+                //    Logger.getLogger(ThessalonikiCSVParserTest.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 return FileVisitResult.CONTINUE;
             }
@@ -91,11 +92,11 @@ public class ThessalonikiCSVParserTest extends VirtuosoCapability {
                 try {
                     List<Statement> states = parser.transform(file.toString(), Files.readAllBytes(file));
                     System.out.println(file.toString() + " " + states.size());
-                    uploadToVirtuoso(states);                    
+                    //uploadToVirtuoso(states);                    
                 } catch (TransformationException | RuntimeException ex) {
                     System.out.println("PROBLEMATIC FILE: " + file.toAbsolutePath());                    
-                } catch (RDFHandlerException ex) {
-                    Logger.getLogger(ThessalonikiCSVParserTest.class.getName()).log(Level.SEVERE, null, ex);
+                //} catch (RDFHandlerException ex) {
+                //    Logger.getLogger(ThessalonikiCSVParserTest.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 return FileVisitResult.CONTINUE;
             }

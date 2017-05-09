@@ -1,5 +1,6 @@
 package eu.bde.spark.job.sc6;
 
+import eu.bde.sc6.budget.parser.api.BudgetDataParser;
 import eu.bde.sc6.budget.parser.api.TransformationException;
 import eu.bde.sc6.budget.parser.api.UnknownBudgetDataParserException;
 import eu.bde.sc6.budget.parser.impl.BudgetDataParserRegistryImpl;
@@ -33,7 +34,7 @@ public class App {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(App.class);
 
     //./spark-submit --class ${SPARK_APPLICATION_MAIN_CLASS} --master ${SPARK_MASTER_URL} ${SPARK_APPLICATION_JAR_LOCATION}
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         // e.g. kafka-sandbox
         String APP_NAME = System.getenv("APP_NAME");
         // e.g.: /app/ , /home/turnguard/bin/apache/spark-1.6.0-bin-hadoop2.6
@@ -61,6 +62,8 @@ public class App {
         // e.g. 10000 (miliseconds)
         int DURATION = System.getenv("SPARK_DURATION")!=null?Integer.parseInt(System.getenv("SPARK_DURATION")):5000;
         
+        boolean DEBUG = System.getenv("DEBUG")!=null?Boolean.parseBoolean(System.getenv("DEBUG")):false;
+        
         SparkConf conf = new SparkConf()
                 .setAppName(APP_NAME)
                 .setSparkHome(SPARK_HOME)
@@ -87,30 +90,40 @@ public class App {
         JavaPairDStream<String, byte[]> input = KafkaUtils.createStream(ssc, String.class, byte[].class,
                 StringDecoder.class, DefaultDecoder.class, kafkaParams, topicMap, StorageLevel.MEMORY_ONLY());
         
+        
         input.foreachRDD((JavaPairRDD<String, byte[]> rdd) -> {
             /* usage example below: by flume pipeline definition rdd.key = fileName, rdd.value = file data as byte[] */            
             rdd.collect().parallelStream().forEach((Tuple2<String, byte[]> t) -> {                                 
                 try {
                     String fileName = t._1 != null ? t._1 : new String(MessageDigest.getInstance("MD5").digest((new Date()).toString().getBytes()));
-                    LOG.warn("parsing: " + fileName);                    
-                    List<Statement> data = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName(fileName).transform(fileName, t._2);
-                    
-                    VirtuosoInserter inserter = new VirtuosoInserter(
-                        new URL(VIRTUOSO_HOST),
-                        new URIImpl(VIRTUOSO_DEFAULT_GRAPH),
-                        VIRTUOSO_USER, 
-                        VIRTUOSO_PASS
-                    );
-                    inserter.startRDF();
-                    for(Statement s : data){
-                        inserter.handleStatement(s);
+                    LOG.warn("parsing: " + fileName); 
+                    if(!DEBUG){
+                        List<Statement> data = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName(fileName).transform(fileName, t._2);
+
+                        VirtuosoInserter inserter = new VirtuosoInserter(
+                            new URL(VIRTUOSO_HOST),
+                            new URIImpl(VIRTUOSO_DEFAULT_GRAPH),
+                            VIRTUOSO_USER, 
+                            VIRTUOSO_PASS
+                        );
+                        inserter.startRDF();
+                        for(Statement s : data){
+                            inserter.handleStatement(s);
+                        }
+                        inserter.endRDF();
+                    } else {
+                        try {
+                            BudgetDataParser parser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName(fileName);
+                            LOG.warn("Available Parser: " + parser);
+                        } catch(Exception e){
+                            LOG.warn(fileName, e);
+                        }
                     }
-                    inserter.endRDF();
                 } catch ( RDFHandlerException | MalformedURLException | NoSuchAlgorithmException | UnknownBudgetDataParserException | TransformationException ex) {
                     LOG.warn(("problematic file: " + t._1), ex);
                 }
             });
-            return null;
+            //return null;
         });
         ssc.start();
         ssc.awaitTermination();

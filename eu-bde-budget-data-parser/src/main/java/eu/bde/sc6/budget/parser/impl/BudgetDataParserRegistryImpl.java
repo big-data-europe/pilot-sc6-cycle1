@@ -5,6 +5,7 @@ import eu.bde.sc6.budget.parser.api.BudgetDataParserRegistry;
 import eu.bde.sc6.budget.parser.api.UnknownBudgetDataParserException;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -12,11 +13,14 @@ import java.util.ServiceLoader;
  */
 public class BudgetDataParserRegistryImpl implements BudgetDataParserRegistry {
     
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(BudgetDataParserRegistryImpl.class);
+    
     private static BudgetDataParserRegistryImpl registry;
     private final ServiceLoader<BudgetDataParser> loader;
 
     private BudgetDataParserRegistryImpl() {
         loader = ServiceLoader.load(BudgetDataParser.class);
+        loader.forEach(parser -> LOG.warn("Available Parser: "+parser.getClass().getName() + " " + parser.getIdentifier()));        
     }
 
     public static synchronized BudgetDataParserRegistryImpl getInstance() {
