@@ -64,17 +64,7 @@ public class AthensCSVParserTest  {
         BudgetDataParser parser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName("/var/lib/bde/flume/sc6/budgets/thessaloniki/csv/incomes/2016/06June/2016_06_21_21.29.csv");
         assertNotNull(parser);
     }    
-    
-    //@Test
-    public void testParseSimpleFile() throws UnknownBudgetDataParserException, IOException, TransformationException{
-        String fileName = "2016_06_30_21.50.csv";
-        byte[] file = IOUtils.toByteArray(AthensCSVParserTest.class.getResourceAsStream("/kalamaria/incomes/".concat(fileName)));
-        BudgetDataParser parser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParser(".*(kalamaria/csv/incomes).*");
-        parser.transform(fileName, file).forEach( s -> {
-            System.out.println(s);
-        });
-    }
-    
+        
     //@Test
     public void testAllIncomeCSVsForDataErrors() throws IOException{
         
