@@ -2,13 +2,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>eu.bde.sc6.budget.parser</groupId>
-    <artifactId>eu-bde-budget-data-parser</artifactId>
-    <version>1.0.0</version>
+    <groupId>biz.poolparty.ppx.client</groupId>
+    <artifactId>ppx-client</artifactId>
+    <version>5.3.4</version>
     <packaging>jar</packaging>
 
-    <name>eu-bde-budget-data-parser</name>
-    
+    <name>ppx-client</name>
+
     <repositories>    
         <repository>
             <id>bde_nexus_thirdparts</id>
@@ -21,8 +21,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>    
-    </repositories>
-        
+    </repositories>    
     <build>
         <plugins>
             <plugin>
@@ -36,11 +35,24 @@
             </plugin>
         </plugins>
     </build>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <dependencies>
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
+            <type>jar</type>
+        </dependency>      
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.13</version>
+            <type>jar</type>
+        </dependency> 
         <dependency>
             <groupId>org.openrdf.sesame</groupId>
             <artifactId>openrdf-sesame</artifactId>
@@ -52,13 +64,7 @@
             <artifactId>commons-io</artifactId>
             <version>2.3</version>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
-            <type>jar</type>
-        </dependency>              
+        </dependency>     
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -68,29 +74,12 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.5.8</version>
-        </dependency>        
+        </dependency>                          
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-            <version>1.4</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>eu.bde.virtuoso</groupId>
-            <artifactId>virtuoso-utils</artifactId>
-            <version>1.0.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>biz.poolparty.ppx.client</groupId>
-            <artifactId>ppx-client</artifactId>
-            <version>5.3.4</version>
         </dependency>
     </dependencies>
 </project>

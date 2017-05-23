@@ -72,6 +72,11 @@
             <version>4.11</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>biz.poolparty.ppx.client</groupId>
+            <artifactId>ppx-client</artifactId>
+            <version>5.3.4</version>
+        </dependency>
     </dependencies>
   
     <build>

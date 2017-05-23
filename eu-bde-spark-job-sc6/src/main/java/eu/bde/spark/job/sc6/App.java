@@ -4,6 +4,7 @@ import eu.bde.sc6.budget.parser.api.BudgetDataParser;
 import eu.bde.sc6.budget.parser.api.TransformationException;
 import eu.bde.sc6.budget.parser.api.UnknownBudgetDataParserException;
 import eu.bde.sc6.budget.parser.impl.BudgetDataParserRegistryImpl;
+import eu.bde.sc6.budget.parser.impl.LiteralMapper;
 import eu.bde.virtuoso.utils.VirtuosoInserter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -98,9 +99,11 @@ public class App {
                     String fileName = t._1 != null ? 
                         t._1 : 
                         new String(MessageDigest.getInstance("MD5").digest((new Date()).toString().getBytes()));
-                    LOG.warn("parsing: " + fileName);                    
-                    List<Statement> data = BudgetDataParserRegistryImpl.getInstance()
-                        .getBudgetDataParserForFileName(fileName).transform(fileName, t._2);
+                    LOG.warn("parsing: " + fileName);     
+                    BudgetDataParser budgetDataParser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName(fileName);
+                    List<Statement> data = budgetDataParser.transform(fileName, t._2);                    
+                    //LiteralMapper literalMapper = new LiteralMapper(budgetDataParser);
+                    //data = literalMapper.map(data);
                     
                     VirtuosoInserter inserter = new VirtuosoInserter(
                         new URL(VIRTUOSO_HOST),
