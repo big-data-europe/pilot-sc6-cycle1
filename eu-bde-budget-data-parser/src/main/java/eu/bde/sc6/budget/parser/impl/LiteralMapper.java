@@ -17,10 +17,15 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
+import java.text.Normalizer;
 import java.util.Collection;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Value;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -47,8 +52,7 @@ public class LiteralMapper {
     
 
     
-    public LiteralMapper(BudgetDataParser budgetDataParser,
-            String PPURL,
+    public LiteralMapper(String PPURL,
             String PPUser,
             String PPPass,
             String PPProject,
@@ -58,8 +62,10 @@ public class LiteralMapper {
         each parser
         */
         this.predicateIndicatingLiterals.add(new URIImpl("http://purl.org/dc/terms/subject"));
+        this.predicatesIndicatingSubstituions.add(new URIImpl("http://www.w3.org/2004/02/skos/core#hiddenLabel"));
         this.predicatesIndicatingSubstituions.add(new URIImpl("http://www.w3.org/2004/02/skos/core#prefLabel"));
         this.predicatesIndicatingSubstituions.add(new URIImpl("http://www.w3.org/2004/02/skos/core#altLabel"));
+
         
         this.client = new PPXClientImpl(
                 new URL(PPURL), PPUser, PPPass);
@@ -70,7 +76,10 @@ public class LiteralMapper {
                 predicateIndicatingLiterals.pop().stringValue(),
                 PPConceptScheme);
         
+        
         mapRequest.setReplaceMode(replaceMode);
+        String[] la = {"en","el","none"};
+        //mapRequest.setLanguages(la);
         
         
         //Other properties, all to the same concept scheme
@@ -110,45 +119,49 @@ public class LiteralMapper {
         boolean supportsNamespaces = format.supportsNamespaces();
         boolean supportsContexts = format.supportsContexts();
                 
-        w.startRDF();
-        int discardBefore = 7000;
-        int discardAfter  = 7699;
-        for (Statement S : data)
-        {
-            i++;
-            if ((i<discardBefore) || (i>discardAfter)) {
-                continue;
-            }        
-                        
-            w.handleStatement(S);
-            //System.out.println(S.toString());
-            S.toString();
-            
-            if (i % 10000 == 10)
+
+        int discardBefore = 0;
+        int discardAfter  = 2200;
+        try { 
+            int numDataPoints = data.size();
+            w.startRDF();
+            for (Statement S : data)
             {
-                int len = baos.size();
-                System.out.println((new Integer(i)).toString()+" "+(new Integer(len)).toString());                
-            }                        
-        }
-        w.endRDF();
-        this.request.setStatements(baos.toString("utf-8"));           
-        System.out.println((new Integer(i-discardBefore)).toString()+"  Statements loaded ----------------------------\n\n");
-        //System.out.println(baos.toString("utf-8"));
-        
-        // Send the resquest and parse the resulting stream   
-        try {    
-            System.out.println("\n--Mapping (PPX): ");
-            MapResponse response = this.client.map(this.request);
-            System.out.println("\n--Got server response ->\n");
-            StringBuilder sbuilder = new StringBuilder();
-            for (String st : response.getStatements())
-            {
-                String st2 = st.replace("> a <","> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <");                
-                sbuilder.append(st2+"\n");
-                //System.out.println(st2);
+                i++;
+                if ((i<discardBefore) || (i>discardAfter)) {
+                    continue;
+                }       
+                Statement x;
+                Value S1 = S.getObject();
+
+                if (S1.getClass().getCanonicalName()==LiteralImpl.class.getCanonicalName() )
+                        {            
+
+                            String newObj = S1.toString().replace("\"","")+" ";//
+                            String objNorm = Normalizer.normalize(newObj, Normalizer.Form.NFD);
+                            String objPure = StringUtils.stripAccents(objNorm.toLowerCase());
+                            //objPure = objPure.substring(0, objPure.length()-1);
+                            x = new StatementImpl(S.getSubject(),S.getPredicate(),new LiteralImpl(objPure) );
+                            w.handleStatement(x);
+                            System.out.println(objPure+"*");
+                        }
+                else
+                {
+                    x  = S;
+
+                }
+                w.handleStatement(x);
+
+                //System.out.println(x.toString());
+
+                if (i % 10000 == 10)
+                {
+                    int len = baos.size();
+                    System.out.println((new Integer(i)).toString()+" "+(new Integer(len)).toString());                
+                }                        
             }
-            //System.out.println("\n--------------------\n");
-            rdfParser.parse(new ByteArrayInputStream(sbuilder.toString().getBytes()), "");
+            w.endRDF();
+            this.submitAndParsePart(rdfParser, w, baos);
             return (List) collector.getStatements();
         
         } catch (IOException |  RequiredParameterMissingException |  RDFParseException | RDFHandlerException ex) {
@@ -160,5 +173,27 @@ public class LiteralMapper {
         
     }
     
+    
+    void submitAndParsePart(RDFParser rdfParser,NTriplesWriter w,ByteArrayOutputStream baos) throws IOException, RDFParseException, RDFParseException, RDFHandlerException, RequiredParameterMissingException
+    {
+         String statementString = Normalizer.normalize(baos.toString(), Normalizer.Form.NFD);
+         this.request.setStatements(statementString);         
+        //System.out.println((new Integer(i-discardBefore)).toString()+"  Statements loaded ----------------------------\n\n");
+
+        // Send the resquest and parse the resulting stream           
+        System.out.println(statementString);
+        System.out.println("\n--Mapping (PPX): ");
+        MapResponse response = this.client.map(this.request);
+        System.out.println("\n--Got server response ->\n");
+        StringBuilder sbuilder = new StringBuilder();
+        for (String st : response.getStatements())
+        {
+            String st2 = st.replace("> a <","> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <");                
+            sbuilder.append(st2+"\n");
+            //System.out.println(st2);
+        }
+        //System.out.println("\n--------------------\n");
+        rdfParser.parse(new ByteArrayInputStream(sbuilder.toString().getBytes()), "");
+    }
     
 }
