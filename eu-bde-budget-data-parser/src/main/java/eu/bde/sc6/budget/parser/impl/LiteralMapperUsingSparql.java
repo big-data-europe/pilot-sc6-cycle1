@@ -67,7 +67,6 @@ public class LiteralMapperUsingSparql {
     public LiteralMapperUsingSparql(String PPHost, String PPProjectName,
             String PPUser,
             String PPPass,
-            String PPProject,
             Set<String> labelsToSubstitute) {
 
         this.PPURL = PPHost + "/PoolParty/sparql/" + PPProjectName;

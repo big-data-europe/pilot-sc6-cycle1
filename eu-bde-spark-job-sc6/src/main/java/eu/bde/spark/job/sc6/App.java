@@ -5,6 +5,7 @@ import eu.bde.sc6.budget.parser.api.TransformationException;
 import eu.bde.sc6.budget.parser.api.UnknownBudgetDataParserException;
 import eu.bde.sc6.budget.parser.impl.BudgetDataParserRegistryImpl;
 import eu.bde.sc6.budget.parser.impl.LiteralMapper;
+import eu.bde.sc6.budget.parser.impl.LiteralMapperUsingSparql;
 import eu.bde.virtuoso.utils.VirtuosoInserter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -12,6 +13,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import kafka.serializer.DefaultDecoder;
@@ -27,6 +29,7 @@ import scala.Tuple2;
 import org.apache.spark.storage.StorageLevel;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.rio.RDFHandlerException;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +65,16 @@ public class App {
         String VIRTUOSO_DEFAULT_GRAPH = System.getenv("VIRTUOSO_DEFAULT_GRAPH");
         // e.g. 10000 (miliseconds)
         int DURATION = System.getenv("SPARK_DURATION")!=null?Integer.parseInt(System.getenv("SPARK_DURATION")):5000;
+        // e.g. SC6-Financial-Terms
+        String POOLPARTY_PROJECT_NAME = System.getenv("POOLPARTY_PROJECT_NAME");
+        // e.g. https://bde.poolparty.biz
+        String POOLPARTY_SERVER = System.getenv("POOLPARTY_SERVER");
+        // e.g. user1
+        String POOLPARTY_USER = System.getenv("POOLPARTY_USER");
+        // e.g. pass1
+        String POOLPARTY_PASS = System.getenv("POOLPARTY_PASS");
+        
+        
         
         boolean DEBUG = System.getenv("DEBUG")!=null?Boolean.parseBoolean(System.getenv("DEBUG")):false;
         
@@ -86,6 +99,9 @@ public class App {
                             kafkaParams.put("fetch.message.max.bytes", "42000000");        
         Map<String, Integer> topicMap = new HashMap<>();
                              topicMap.put(KAFKA_TOPIC, 3);
+                             
+        HashSet<String> labelsToSubstitute = new HashSet<>();
+        labelsToSubstitute.add(DCTERMS.SUBJECT.toString());                             
         
                              
         JavaPairDStream<String, byte[]> input = KafkaUtils.createStream(ssc, String.class, byte[].class,
@@ -102,9 +118,14 @@ public class App {
                     LOG.warn("parsing: " + fileName);     
                     BudgetDataParser budgetDataParser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName(fileName);
                     List<Statement> data = budgetDataParser.transform(fileName, t._2);                    
-                    //LiteralMapper literalMapper = new LiteralMapper(budgetDataParser);
-                    //data = literalMapper.map(data);
                     
+                    LiteralMapperUsingSparql literalMapper = new LiteralMapperUsingSparql(POOLPARTY_SERVER,POOLPARTY_PROJECT_NAME,
+                                POOLPARTY_USER,
+                                POOLPARTY_PASS,                
+                                labelsToSubstitute); 
+                    
+                    data = literalMapper.map(data);
+
                     VirtuosoInserter inserter = new VirtuosoInserter(
                         new URL(VIRTUOSO_HOST),
                         new URIImpl(VIRTUOSO_DEFAULT_GRAPH),
