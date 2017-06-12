@@ -4,7 +4,6 @@ import eu.bde.sc6.budget.parser.api.BudgetDataParser;
 import eu.bde.sc6.budget.parser.api.TransformationException;
 import eu.bde.sc6.budget.parser.api.UnknownBudgetDataParserException;
 import eu.bde.sc6.budget.parser.impl.BudgetDataParserRegistryImpl;
-import eu.bde.sc6.budget.parser.impl.LiteralMapper;
 import eu.bde.sc6.budget.parser.impl.LiteralMapperUsingSparql;
 import eu.bde.virtuoso.utils.VirtuosoInserter;
 import java.net.MalformedURLException;
