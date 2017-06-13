@@ -64,6 +64,14 @@ public class LiteralMapperUsingSparql {
     public Header authHeader;
     public LinkedList<String> matchingPredicates;
 
+    public LiteralMapperUsingSparql()
+    {
+        this.matchingPredicates = new LinkedList<>();
+        this.matchingPredicates.add("http://www.w3.org/2004/02/skos/core#hiddenLabel");
+        this.matchingPredicates.add("http://www.w3.org/2004/02/skos/core#prefLabel");
+        this.matchingPredicates.add("http://www.w3.org/2004/02/skos/core#altLabel");        
+    }
+    
     public LiteralMapperUsingSparql(String PPHost, String PPProjectName,
             String PPUser,
             String PPPass,
@@ -143,7 +151,7 @@ public class LiteralMapperUsingSparql {
         return stack.empty();
     }
 
-    private String stringPreprocessing(String s) {
+    public String stringPreprocessing(String s) {
         String newObj = s.replace("\"", "");
         newObj = newObj.replace("'", "");
         // If the stirng has non-matching parenthesis, they are removed
@@ -183,6 +191,7 @@ public class LiteralMapperUsingSparql {
 
         System.out.println((new Integer(LiteralUriMap.size())).toString() + " literals Mapped");
 
+        int i = 0;
         List<Statement> result = new LinkedList<Statement>();
         for (Statement s : data) {
             Statement sNew = s;
@@ -192,11 +201,13 @@ public class LiteralMapperUsingSparql {
                 if (LiteralUriMap.containsKey(objStr)) {
                     URIImpl mappedUri = LiteralUriMap.get(objStr);
                     sNew = new StatementImpl(s.getSubject(), s.getPredicate(), mappedUri);
-                    SetOfUsedURIs.add(mappedUri);
+                    SetOfUsedURIs.add(mappedUri);                    
+                    i++;
                 }
             }
             result.add(sNew);
         }
+        System.out.println((new Integer(i)).toString() + " Result Size");
         return (result);
 
     }
@@ -229,7 +240,7 @@ public class LiteralMapperUsingSparql {
         String query = "SELECT ?X\n WHERE {";
         for (int predN = 0; predN < this.matchingPredicates.size(); predN++) {
             String pred = this.matchingPredicates.get(predN);
-            query += "\n{?X <" + pred + "> ?o. \n FILTER (regex(?o, '^" + literal + "$') )}\n";
+            query += "\n{?X <" + pred + "> ?o. \n FILTER (regex(?o, '^" + literal + "') )}\n";
             if (predN < this.matchingPredicates.size() - 1) {
                 query += "UNION";
             }
