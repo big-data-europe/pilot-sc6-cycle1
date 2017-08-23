@@ -5,9 +5,11 @@ import eu.bde.sc6.budget.parser.api.TransformationException;
 import eu.bde.sc6.budget.parser.api.UnknownBudgetDataParserException;
 import eu.bde.sc6.budget.parser.base.thessaloniki.CSVExpensesParser;
 import eu.bde.sc6.budget.parser.impl.BudgetDataParserRegistryImpl;
+import eu.bde.virtuoso.utils.VirtuosoInserter;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -26,6 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openrdf.model.Statement;
+import org.openrdf.model.impl.URIImpl;
 import org.openrdf.rio.RDFHandlerException;
 
 /**
@@ -120,5 +123,47 @@ public class AthensCSVParserTest  {
             }
         });
     }
-    
+ 
+    @Test
+    public void testSingleExpensesCSVsForDataErrors() throws IOException{
+        
+        File rootDirectory = new File(AthensCSVParserTest.class.getClass().getResource("/athens/rdf/expenses/").getFile());
+        Path path = Paths.get(rootDirectory.toURI());
+        
+        BudgetDataParser parser = new eu.bde.sc6.budget.parser.base.athens.CSVExpensesParser();
+        
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>() { 
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+            {
+                try {
+                    if(file.toString().contains("2016") && file.toString().contains("jun")){                       
+                        List<Statement> states = parser.transform(file.toString(), Files.readAllBytes(file));
+                        
+                        VirtuosoInserter handler = new VirtuosoInserter(
+                                new URL("http://bde-virtuoso.poolparty.biz/sparql-graph-crud-auth"), 
+                                new URIImpl("urn:sc6"), 
+                                "dba", 
+                                "egiaCivahY6z"
+                        );
+                        //handler.startRDF();
+                        for(Statement state : states){
+                          //  handler.handleStatement(state);
+                            System.out.println(state);
+                        }                        
+                        //handler.endRDF();
+                        System.out.println(file.toString() + " " + states.size());
+                        //uploadToVirtuoso(states);                                    
+                    }
+                } catch (TransformationException | RuntimeException ex) {
+                    System.out.println("PROBLEMATIC FILE: " + file.toAbsolutePath());                    
+                }
+                //catch (RDFHandlerException ex) {
+                //    ex.printStackTrace();
+                //    System.out.println("PROBLEMATIC FILE: " + file.toAbsolutePath());                    
+                //}
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }    
 }

@@ -38,6 +38,7 @@ public class ELOD {
     public static final URI FINANCIAL_YEAR = new URIImpl(NAMESPACE.concat("financialYear"));    
     public static final URI KAE = new URIImpl(NAMESPACE.concat("kae"));    
     public static final URI HAS_KIND = new URIImpl(NAMESPACE.concat("hasKind"));    
+    public static final URI HAS_RELATED_RATIO = new URIImpl(NAMESPACE.concat("hasRelatedRatio"));    
     
     public static final URI PROPERTY = new URIImpl(NAMESPACE.concat("property"));
     public static final URI SUBSIDY = new URIImpl(NAMESPACE.concat("subsidy"));

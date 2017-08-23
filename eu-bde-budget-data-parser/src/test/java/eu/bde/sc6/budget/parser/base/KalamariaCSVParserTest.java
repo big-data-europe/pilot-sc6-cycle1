@@ -5,7 +5,9 @@ import eu.bde.sc6.budget.parser.api.TransformationException;
 import eu.bde.sc6.budget.parser.api.UnknownBudgetDataParserException;
 import eu.bde.sc6.budget.parser.base.thessaloniki.CSVExpensesParser;
 import eu.bde.sc6.budget.parser.impl.BudgetDataParserRegistryImpl;
+import eu.bde.sc6.budget.parser.impl.LiteralMapperUsingSparql;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.FileSystems;
@@ -15,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,7 +29,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openrdf.model.Statement;
+import org.openrdf.model.vocabulary.DCTERMS;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.Rio;
 
 /**
  *
@@ -55,15 +62,86 @@ import org.openrdf.rio.RDFHandlerException;
     public void tearDown() {
     }
 
+    private static final String POOLPARTY_SERVER = "http://bde.poolparty.biz";
+    private static final String POOLPARTY_PROJECT_NAME = "hierarchicalKAE";
+    private static final String POOLPARTY_USER = "sc6admin";
+    private static final String POOLPARTY_PASS = "sc6admin";
+    private static final HashSet<String> LABELS_TO_SUBSTITUTE = new HashSet<>();
+        
+            
     //@Test
-    public void testParseSimpleFile() throws UnknownBudgetDataParserException, IOException, TransformationException{
+    public void testParseSimpleIncomeFile() throws UnknownBudgetDataParserException, IOException, TransformationException{
+        
+        LABELS_TO_SUBSTITUTE.add(DCTERMS.SUBJECT.toString());
+        
         String fileName = "2016_06_30_21.50.csv";
-        byte[] file = IOUtils.toByteArray(KalamariaCSVParserTest.class.getResourceAsStream("/kalamaria/incomes/".concat(fileName)));
+        byte[] file = IOUtils.toByteArray(KalamariaCSVParserTest.class.getResourceAsStream("/kalamaria/csv/incomes/".concat(fileName)));
         BudgetDataParser parser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParser(".*(kalamaria/csv/incomes).*");
-        parser.transform(fileName, file).forEach( s -> {
-            System.out.println(s);
-        });
+        List<Statement> states = parser.transform(fileName, file);
+        LiteralMapperUsingSparql literalMapper = new LiteralMapperUsingSparql(
+                POOLPARTY_SERVER,
+                POOLPARTY_PROJECT_NAME,
+                POOLPARTY_USER,
+                POOLPARTY_PASS,                
+                LABELS_TO_SUBSTITUTE);                     
+        states = literalMapper.map(states);
+        states.forEach(System.out::println);
+        FileOutputStream fos = null;
+        RDFHandler fileWriter = null;
+        try {
+            fos = new FileOutputStream(new File("/home/turnguard/Downloads/"+(fileName.replaceFirst("csv", "ttl"))));
+            fileWriter = Rio.createWriter(RDFFormat.TURTLE, fos);
+            fileWriter.startRDF();
+            for(Statement s : states){
+                fileWriter.handleStatement(s);
+            }
+            fileWriter.endRDF();
+        } catch (RDFHandlerException ex) {
+            ex.printStackTrace();
+        } finally {
+            if(fos!=null){
+                fos.close();
+            }
+        }
+         
     }
+    
+    @Test
+    public void testParseSimpleExpenseFile() throws UnknownBudgetDataParserException, IOException, TransformationException{
+        
+        LABELS_TO_SUBSTITUTE.add(DCTERMS.SUBJECT.toString());
+        
+        String fileName = "2016_06_30_21.51.csv";
+        byte[] file = IOUtils.toByteArray(KalamariaCSVParserTest.class.getResourceAsStream("/kalamaria/csv/expenses/".concat(fileName)));
+        BudgetDataParser parser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParser(".*(kalamaria/csv/expenses).*");
+        List<Statement> states = parser.transform(fileName, file);
+        LiteralMapperUsingSparql literalMapper = new LiteralMapperUsingSparql(
+                POOLPARTY_SERVER,
+                POOLPARTY_PROJECT_NAME,
+                POOLPARTY_USER,
+                POOLPARTY_PASS,                
+                LABELS_TO_SUBSTITUTE);                     
+        states = literalMapper.map(states);
+        states.forEach(System.out::println);
+        FileOutputStream fos = null;
+        RDFHandler fileWriter = null;
+        try {
+            fos = new FileOutputStream(new File("/home/turnguard/Downloads/"+(fileName.replaceFirst("csv", "ttl"))));
+            fileWriter = Rio.createWriter(RDFFormat.TURTLE, fos);
+            fileWriter.startRDF();
+            for(Statement s : states){
+                fileWriter.handleStatement(s);
+            }
+            fileWriter.endRDF();
+        } catch (RDFHandlerException ex) {
+            ex.printStackTrace();
+        } finally {
+            if(fos!=null){
+                fos.close();
+            }
+        }
+         
+    }    
    
     //@Test
     public void testAllIncomeCSVsForDataErrors() throws IOException{

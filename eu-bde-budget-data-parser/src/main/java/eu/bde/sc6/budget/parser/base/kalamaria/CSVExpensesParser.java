@@ -36,6 +36,7 @@ public class CSVExpensesParser implements BudgetDataParser {
     private final static String IDENTIFIER = ".*(kalamaria/csv/expenses).*";
     private final static Pattern FILENAME_DATE_PATTERN = Pattern.compile(".*([0-9]{4})_([0-9]{2})_([0-9]{2}).*");
     private final static String INSTANCE_NAMESPACE = "http://linkedeconomy.org/resource/kalamaria/expenses/";
+    private final static String INSTANCE_KAE_NAMESPACE = "http://linkedeconomy.org/resource/";
     
     @Override
     public List<Statement> transform(String fileName, byte[] file) throws TransformationException {
@@ -120,11 +121,11 @@ public class CSVExpensesParser implements BudgetDataParser {
                             String committedNew = committed2.replace(",", ".");
                             
                             //Creation of Resources
-                            URI instanceKAE = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "KAE/"
+                            URI instanceKAE = ValueFactoryImpl.getInstance().createURI(INSTANCE_KAE_NAMESPACE + "KAE/"
                                     + year.toString() + "/Expense/" + oneDigit + "/" + twoDigit + "/" + threeDigit
                                     + "/" + fourDigit);
 
-                            URI instanceKAECustom = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "KAE/"
+                            URI instanceKAECustom = ValueFactoryImpl.getInstance().createURI(INSTANCE_KAE_NAMESPACE + "KAE/"
                                     + year.toString() + "/Expense/" + oneDigit + "/" + twoDigit + "/" + threeDigit
                                     + "/" + fourDigit + "/" + kaeService);
 
