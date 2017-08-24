@@ -168,9 +168,11 @@ public class CSVIncomesParser implements BudgetDataParser {
 
                             URI instanceCurrency = ValueFactoryImpl.getInstance().createURI("http://linkedconomy.org/resource/Currency/EUR");
 
+                            //URI instanceOrganization = ValueFactoryImpl.getInstance().createURI(
+                            //        "http://linkedeconomy.org/resource/Organization/090226243");
                             URI instanceOrganization = ValueFactoryImpl.getInstance().createURI(
-                                    "http://linkedeconomy.org/resource/Organization/090226243");
-
+                                    "http://bde.poolparty.biz/hierarchicalKAE/664");                            
+                                        
                             //Resources' s type declarations
 
                             data.add(new StatementImpl(instanceKAECustom, RDF.TYPE, ELOD.CUSTOM_KAE));

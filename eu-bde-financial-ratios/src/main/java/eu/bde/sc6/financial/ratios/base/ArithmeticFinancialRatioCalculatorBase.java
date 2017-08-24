@@ -33,11 +33,14 @@ import org.openrdf.repository.sparql.SPARQLRepository;
  */
 public class ArithmeticFinancialRatioCalculatorBase extends FinancialRatioCalculatorBase {
     String QUERY_ARITHM = ""
-            + "SELECT * "
+            + "SELECT "
+            + " (COALESCE(?nominator,0) AS ?nominator1) "
+            + " ?denominator1 "
+            + " ?denominator2 "
             + "FROM <<dataGraph>>  "
             + "WHERE {"
             + " {"
-            + "     SELECT (COALESCE(SUM(xsd:double(?amount)),0) as ?nominator1)"
+            + "     SELECT (SUM(xsd:double(?amount)) AS ?nominator)"
             + "     FROM <<dataGraph>>   "
             + "     WHERE {"
             + "         ?item rdf:type elod:CollectedItem ; "

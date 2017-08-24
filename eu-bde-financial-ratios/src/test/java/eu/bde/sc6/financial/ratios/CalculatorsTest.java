@@ -33,6 +33,11 @@ public class CalculatorsTest {
     static Literal BUDGET_LABEL = new LiteralImpl("Kalamaria");
     static URI BUYER_SELLER_KALAMARIA = new URIImpl("http://linkedeconomy.org/resource/Organization/090226243");
     static Literal ISSUED = new LiteralImpl("2016-06-30T12:00:00+02:00", XMLSchema.DATETIME);
+        
+    static URI BUDGET_ATHENS = new URIImpl("http://linkedeconomy.org/AthensBudget");
+    static Literal BUDGET_ATHENS_LABEL = new LiteralImpl("Athens");    
+    static URI BUYER_SELLER_ATHENS = new URIImpl("http://bde.poolparty.biz/hierarchicalKAE/669");
+    
     public CalculatorsTest() {
     }
     
@@ -64,6 +69,12 @@ public class CalculatorsTest {
                 .getCalculatorByClassName("TaktikaCalculatorFactory");        
         frc.calculate(DATA_GRAPH, BUDGET, BUDGET_LABEL, BUYER_SELLER_KALAMARIA, ISSUED).forEach(System.out::println);                
     }
+    @Test
+    public void testTaktikaAthensCalculator() throws UnknownCalculatorException, CalculationException {
+        FinancialRatioCalculator frc = FinancialRatioCalculatorRegistryImpl.getInstance()
+                .getCalculatorByClassName("TaktikaCalculatorFactory");        
+        frc.calculate(DATA_GRAPH, BUDGET_ATHENS, BUDGET_ATHENS_LABEL, BUYER_SELLER_ATHENS, ISSUED).forEach(System.out::println);                
+    }    
     //@Test
     public void testRegularRevenuesRatioCalculator() throws UnknownCalculatorException, CalculationException {
         FinancialRatioCalculator frc = FinancialRatioCalculatorRegistryImpl.getInstance()
@@ -238,7 +249,7 @@ public class CalculatorsTest {
                 .getCalculatorByClassName("CleaningFeesPerCapitaRatioCalculatorFactory");        
         frc.calculate(DATA_GRAPH, BUDGET, BUDGET_LABEL, BUYER_SELLER_KALAMARIA, ISSUED).forEach(System.out::println);                
     } 
-    @Test
+    //@Test
     public void testExpensesUsePerCapitaRatioCalculator() throws UnknownCalculatorException, CalculationException {
         FinancialRatioCalculator frc = FinancialRatioCalculatorRegistryImpl.getInstance()
                 .getCalculatorByClassName("ExpensesUsePerCapitaRatioCalculatorFactory");        

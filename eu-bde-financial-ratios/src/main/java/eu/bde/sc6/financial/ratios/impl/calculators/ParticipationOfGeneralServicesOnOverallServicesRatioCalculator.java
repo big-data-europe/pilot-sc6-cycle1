@@ -5,7 +5,7 @@ import org.openrdf.model.URI;
 import org.openrdf.repository.sparql.SPARQLRepository;
 
 /**
- *
+ * unregistered for now due to virtuoso error 
  * @author http://www.turnguard.com/turnguard
  */
 public class ParticipationOfGeneralServicesOnOverallServicesRatioCalculator extends ArithmeticFinancialRatioCalculatorBase {

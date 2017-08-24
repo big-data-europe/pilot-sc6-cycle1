@@ -50,10 +50,12 @@ public abstract class TotalIncomeFinancialRatioCalculator extends DefaultIncomeF
     }
     
     protected Literal getTotal(URI dataGraph, URI budget, Literal budgetLabel, URI buyerSeller, Literal issued) throws RepositoryException, MalformedQueryException, QueryEvaluationException, MalformedQueryException, TupleQueryResultHandlerException{
+        
         RepositoryConnection repCon = null;
         TupleQueryResult result = null;    
         try {
-            repCon = super.dataRepository.getConnection();
+            
+            repCon = super.dataRepository.getConnection();            
             result = repCon.prepareTupleQuery(QueryLanguage.SPARQL, getTotalQuery(dataGraph, buyerSeller, issued)).evaluate();
             return (Literal)result.next().getValue("sum");
         } finally {
@@ -67,10 +69,10 @@ public abstract class TotalIncomeFinancialRatioCalculator extends DefaultIncomeF
         List<URI> totalKaes = new ArrayList<>();
         RepositoryConnection repCon = null;
         try {
-            repCon = this.pptRepository.getConnection();
+            repCon = this.pptRepository.getConnection();            
             repCon.prepareTupleQuery(
                     QueryLanguage.SPARQL, 
-                    KAE_QUERY_TEMPLATE.replaceFirst("<financialRatio>", getTotalFinancialRatio().stringValue())
+                    KAE_QUERY_TEMPLATE.replaceAll("<financialRatio>", getTotalFinancialRatio().stringValue())
             ).evaluate(new TupleQueryResultHandlerBase(){
                 @Override
                 public void handleSolution(BindingSet bindingSet) throws TupleQueryResultHandlerException {
@@ -90,6 +92,7 @@ public abstract class TotalIncomeFinancialRatioCalculator extends DefaultIncomeF
     protected String getTotalQuery(URI dataGraph, URI buyerSeller, Literal issued) throws RepositoryException, MalformedQueryException, QueryEvaluationException, TupleQueryResultHandlerException{
         XMLGregorianCalendar cal = issued.calendarValue();
         StringBuilder kaeFilter = new StringBuilder();
+        
         this.getTotalKaes()
                 .stream()
                 .filter(
@@ -99,6 +102,7 @@ public abstract class TotalIncomeFinancialRatioCalculator extends DefaultIncomeF
                         kaeFilter.append(",<").append(kae).append(">");
                     }
                 );
+        
         return this.getTotalQueryTemplate()
                 .replaceFirst("<dataGraph>", dataGraph.stringValue())
                 .replaceAll("<year>", cal.getYear()+"")

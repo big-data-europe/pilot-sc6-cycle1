@@ -35,12 +35,12 @@ public class DefaultIncomePercentageFinancialRatioCalculator extends TotalIncome
         Literal total;
         Literal sum;
         try {
-            total = super.getTotal(dataGraph, budget, budgetLabel, buyerSeller, issued);
+            total = super.getTotal(dataGraph, budget, budgetLabel, buyerSeller, issued);            
             sum = super.getSum(dataGraph, buyerSeller, issued);
         } catch (TupleQueryResultHandlerException | RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
-            throw new CalculationException(ex);
+            throw new CalculationException(this.getClass().getName(), ex);
         }
-        
+
         URI statistic = super.createStatisticsURI();
         URI aggregate = super.createAggregateURI();
         

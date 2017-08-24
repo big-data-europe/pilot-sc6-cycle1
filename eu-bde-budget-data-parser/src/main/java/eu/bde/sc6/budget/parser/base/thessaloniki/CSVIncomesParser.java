@@ -37,7 +37,8 @@ public class CSVIncomesParser implements BudgetDataParser {
     private final static String IDENTIFIER = ".*(thessaloniki/csv/incomes).*";
     private final static Pattern FILENAME_DATE_PATTERN = Pattern.compile(".*([0-9]{4})_([0-9]{2})_([0-9]{2}).*");
     private final static String INSTANCE_NAMESPACE = "http://linkedeconomy.org/resource/thessaloniki/incomes/";
-    
+    private final static String INSTANCE_KAE_NAMESPACE = "http://linkedeconomy.org/resource/";
+        
     @Override
     public List<Statement> transform(String fileName, byte[] file) throws TransformationException {
 
@@ -97,11 +98,11 @@ public class CSVIncomesParser implements BudgetDataParser {
                     String approval2 = confirmed.replace(".", "");
                     String approvalNew = approval2.replace(",", ".");
                     
-                    URI instanceKAE = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "KAE/"
+                    URI instanceKAE = ValueFactoryImpl.getInstance().createURI(INSTANCE_KAE_NAMESPACE + "KAE/"
                             + year + "/Income/" + oneDigit + "/" + twoDigit + "/" + threeDigit
                             + "/" + fourDigit);
                     
-                    URI instanceKAECustom = ValueFactoryImpl.getInstance().createURI(INSTANCE_NAMESPACE + "KAE/"
+                    URI instanceKAECustom = ValueFactoryImpl.getInstance().createURI(INSTANCE_KAE_NAMESPACE + "KAE/"
                             + year + "/Income/" + oneDigit + "/" + twoDigit + "/" + threeDigit
                             + "/" + fourDigit + "/" + fifthLevelOfKae1 + "/" + fifthLevelOfKae2);
                     
@@ -143,8 +144,10 @@ public class CSVIncomesParser implements BudgetDataParser {
 
                     URI instanceCurrency = ValueFactoryImpl.getInstance().createURI("http://linkedconomy.org/resource/Currency/EUR");
 
+                    //URI instanceOrganization = ValueFactoryImpl.getInstance().createURI(
+                    //        "http://linkedeconomy.org/resource/Organization/998082845");
                     URI instanceOrganization = ValueFactoryImpl.getInstance().createURI(
-                            "http://linkedeconomy.org/resource/Organization/998082845");   
+                                    "http://bde.poolparty.biz/hierarchicalKAE/665");                            
                     
                     data.add(new StatementImpl(instanceKAECustom, RDF.TYPE, ELOD.CUSTOM_KAE));
                     data.add(new StatementImpl(instanceBudgetItem, RDF.TYPE, ELOD.BUDGET_ITEM));

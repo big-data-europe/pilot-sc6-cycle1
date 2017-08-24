@@ -2,6 +2,7 @@ package eu.bde.sc6.budget.parser.base.athens;
 
 import eu.bde.sc6.budget.parser.api.BudgetDataParser;
 import eu.bde.sc6.budget.parser.api.TransformationException;
+import eu.bde.sc6.budget.parser.vocabulary.ELOD;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +42,28 @@ public class CSVIncomesParser implements BudgetDataParser{
     private final static Pattern FILENAME_DATE_PATTERN = Pattern.compile("([0-9]{4})_([0-9]{2})_([0-9]{2}).*");
     private final static String INSTANCE_NAMESPACE = "http://linkedeconomy.org/resource/athens/incomes/";
     
+    private URI fixURI(URI u){
+        if(
+            u.stringValue().startsWith("http://linkedeconomy.org/resource/UnitPriceSpecification") ||
+            u.stringValue().startsWith("http://linkedeconomy.org/resource/RevenueRecognizedItem") ||
+            u.stringValue().startsWith("http://linkedeconomy.org/resource/BudgetItem") ||    
+            u.stringValue().startsWith("http://linkedeconomy.org/resource/CollectedItem") ||
+            u.stringValue().startsWith("http://linkedeconomy.org/resource/SpendingItem") ||
+            u.stringValue().startsWith("http://linkedeconomy.org/resource/CommittedItem") ||
+            u.stringValue().startsWith("http://linkedeconomy.org/resource/ExpenseApprovalItem") ||
+            u.stringValue().startsWith("http://linkedeconomy.org/resource/ExpenditureLine")
+                
+        ){
+            return new URIImpl(
+                u.stringValue().replaceFirst(
+                        "http://linkedeconomy.org/resource/", 
+                        INSTANCE_NAMESPACE
+                )
+            );
+        }
+        return u;
+    }
+    
     @Override
     public List<Statement> transform(String fileName, byte[] file) throws TransformationException {
         Literal source = new LiteralImpl(fileName);
@@ -48,22 +71,21 @@ public class CSVIncomesParser implements BudgetDataParser{
         StatementCollector collector = new StatementCollector(){
             @Override
             public void handleStatement(Statement st) {
-                Resource s = st.getSubject().stringValue().startsWith("http://linkedeconomy.org/resource/")?
-                            new URIImpl(
-                                st.getSubject().stringValue().replaceFirst(
-                                        "http://linkedeconomy.org/resource/", 
-                                        INSTANCE_NAMESPACE
-                                )
-                            ):st.getSubject();
-                Value o = ((st.getObject() instanceof URI) && st.getObject().stringValue().startsWith("http://linkedeconomy.org/resource/"))?
-                            new URIImpl(
-                                st.getObject().stringValue().replaceFirst(
-                                        "http://linkedeconomy.org/resource/", 
-                                        INSTANCE_NAMESPACE
-                                )
-                            ):st.getObject(); 
+                Value o = st.getObject();
                 
+                if(st.getPredicate().stringValue().equals("http://linkedeconomy.org/ontology#seller")){
+                    o = new URIImpl("http://bde.poolparty.biz/hierarchicalKAE/669");                 
+                }
+                URI s = fixURI((URI)st.getSubject());
+                if(o instanceof URI){
+                    o = fixURI((URI)o);
+                }     
+                if(st.getPredicate().equals(DCTERMS.ISSUED)){
+                    o = new LiteralImpl(st.getObject().stringValue(), XMLSchema.DATE);
+                }
+
                 super.handleStatement(new StatementImpl(s, st.getPredicate(), o));
+                
                 if(st.getPredicate().equals(RDF.TYPE)){
                     super.handleStatement(new StatementImpl(s,DCTERMS.SOURCE,source));
                 }

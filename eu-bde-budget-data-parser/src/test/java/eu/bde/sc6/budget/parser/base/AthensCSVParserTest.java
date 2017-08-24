@@ -5,8 +5,10 @@ import eu.bde.sc6.budget.parser.api.TransformationException;
 import eu.bde.sc6.budget.parser.api.UnknownBudgetDataParserException;
 import eu.bde.sc6.budget.parser.base.thessaloniki.CSVExpensesParser;
 import eu.bde.sc6.budget.parser.impl.BudgetDataParserRegistryImpl;
+import eu.bde.sc6.budget.parser.impl.LiteralMapperUsingSparql;
 import eu.bde.virtuoso.utils.VirtuosoInserter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -17,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,7 +32,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.vocabulary.DCTERMS;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.Rio;
 
 /**
  *
@@ -37,6 +44,12 @@ import org.openrdf.rio.RDFHandlerException;
  */
 //public class AthensCSVParserTest extends VirtuosoCapability {
 public class AthensCSVParserTest  {
+    
+    private static final String POOLPARTY_SERVER = "http://bde.poolparty.biz";
+    private static final String POOLPARTY_PROJECT_NAME = "hierarchicalKAE";
+    private static final String POOLPARTY_USER = "sc6admin";
+    private static final String POOLPARTY_PASS = "sc6admin";
+    private static final HashSet<String> LABELS_TO_SUBSTITUTE = new HashSet<>();
     
     public AthensCSVParserTest() throws MalformedURLException {
     }
@@ -62,7 +75,7 @@ public class AthensCSVParserTest  {
         BudgetDataParser parser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParser("thessaloniki.incomes.csv");
         assertNotNull(parser);
     }
-    @Test
+    //@Test
     public void testAvailableInRegistry001() throws UnknownBudgetDataParserException {
         BudgetDataParser parser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParserForFileName("/var/lib/bde/flume/sc6/budgets/thessaloniki/csv/incomes/2016/06June/2016_06_21_21.29.csv");
         assertNotNull(parser);
@@ -124,7 +137,7 @@ public class AthensCSVParserTest  {
         });
     }
  
-    @Test
+    //@Test
     public void testSingleExpensesCSVsForDataErrors() throws IOException{
         
         File rootDirectory = new File(AthensCSVParserTest.class.getClass().getResource("/athens/rdf/expenses/").getFile());
@@ -166,4 +179,114 @@ public class AthensCSVParserTest  {
             }
         });
     }    
+    
+    @Test
+    public void parseAllIncomeCSVs() throws IOException, UnknownBudgetDataParserException{
+        
+        LABELS_TO_SUBSTITUTE.add(DCTERMS.SUBJECT.toString());
+        
+        File rootDirectory = new File(AthensCSVParserTest.class.getClass().getResource("/athens/rdf/incomes/").getFile());
+        Path path = Paths.get(rootDirectory.toURI());
+        
+        BudgetDataParser parser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParser(".*(athens/rdf/incomes).*");
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>() { 
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+            {
+                try {
+                    if(file.toString().contains("2016")){
+                        System.out.println("handling: " + file.getFileName().toString());
+                        List<Statement> states = parser.transform(file.toString(), Files.readAllBytes(file));
+                        for(Statement state : states){
+                            System.out.println(state);
+                        }
+                        LiteralMapperUsingSparql literalMapper = new LiteralMapperUsingSparql(
+                                POOLPARTY_SERVER,
+                                POOLPARTY_PROJECT_NAME,
+                                POOLPARTY_USER,
+                                POOLPARTY_PASS,                
+                                LABELS_TO_SUBSTITUTE);                     
+                        states = literalMapper.map(states);               
+                        FileOutputStream fos = null;
+                        RDFHandler fileWriter = null;
+                        try {
+                            fos = new FileOutputStream(new File("/home/turnguard/projects/swc/bde/resources/sc6/financial-ratios/24082017/athens/incomes/"+(file.getFileName().toString().replaceFirst("csv", "ttl"))));
+                            fileWriter = Rio.createWriter(RDFFormat.TURTLE, fos);
+                            fileWriter.startRDF();
+                            for(Statement s : states){
+                                fileWriter.handleStatement(s);
+                            }
+                            fileWriter.endRDF();
+                        } catch (RDFHandlerException ex) {
+                            ex.printStackTrace();
+                        } finally {
+                            if(fos!=null){
+                                fos.close();
+                            }
+                        }                        
+                    }                    
+                } catch (TransformationException | RuntimeException ex) {
+                    System.out.println("PROBLEMATIC FILE: " + file.toAbsolutePath()); 
+                    ex.printStackTrace();
+                //} catch (RDFHandlerException ex) {
+                //    Logger.getLogger(ThessalonikiCSVParserTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+    
+    @Test
+    public void parseAllExpensesCSVs() throws IOException, UnknownBudgetDataParserException{
+        
+        LABELS_TO_SUBSTITUTE.add(DCTERMS.SUBJECT.toString());
+        
+        File rootDirectory = new File(AthensCSVParserTest.class.getClass().getResource("/athens/rdf/expenses/").getFile());
+        Path path = Paths.get(rootDirectory.toURI());
+        
+        BudgetDataParser parser = BudgetDataParserRegistryImpl.getInstance().getBudgetDataParser(".*(athens/rdf/expenses).*");
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>() { 
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+            {
+                try {
+                    if(file.toString().contains("2016")){
+                        System.out.println("handling: " + file.getFileName().toString());
+                        List<Statement> states = parser.transform(file.toString(), Files.readAllBytes(file));
+                        LiteralMapperUsingSparql literalMapper = new LiteralMapperUsingSparql(
+                                POOLPARTY_SERVER,
+                                POOLPARTY_PROJECT_NAME,
+                                POOLPARTY_USER,
+                                POOLPARTY_PASS,                
+                                LABELS_TO_SUBSTITUTE);                     
+                        states = literalMapper.map(states);               
+                        FileOutputStream fos = null;
+                        RDFHandler fileWriter = null;
+                        try {
+                            fos = new FileOutputStream(new File("/home/turnguard/projects/swc/bde/resources/sc6/financial-ratios/24082017/athens/expenses/"+(file.getFileName().toString().replaceFirst("csv", "ttl"))));
+                            fileWriter = Rio.createWriter(RDFFormat.TURTLE, fos);
+                            fileWriter.startRDF();
+                            for(Statement s : states){
+                                fileWriter.handleStatement(s);
+                            }
+                            fileWriter.endRDF();
+                        } catch (RDFHandlerException ex) {
+                            ex.printStackTrace();
+                        } finally {
+                            if(fos!=null){
+                                fos.close();
+                            }
+                        }                        
+                    }                    
+                } catch (TransformationException | RuntimeException ex) {
+                    System.out.println("PROBLEMATIC FILE: " + file.toAbsolutePath()); 
+                    ex.printStackTrace();
+                //} catch (RDFHandlerException ex) {
+                //    Logger.getLogger(ThessalonikiCSVParserTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }    
+        
 }

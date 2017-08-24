@@ -40,7 +40,7 @@ public class DefaultExpensePercentageFinancialRatioCalculator extends TotalExpen
             total = super.getTotal(dataGraph, budget, budgetLabel, buyerSeller, issued);
             sum = super.getSum(dataGraph, buyerSeller, issued);
         } catch (RepositoryException | MalformedQueryException | QueryEvaluationException | TupleQueryResultHandlerException ex) {
-            throw new CalculationException(ex);
+            throw new CalculationException(this.getClass().getName(), ex);
         }
         
         URI statistic = super.createStatisticsURI();

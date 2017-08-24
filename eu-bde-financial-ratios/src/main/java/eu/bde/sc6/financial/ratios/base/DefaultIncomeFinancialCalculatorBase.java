@@ -60,7 +60,7 @@ public abstract class DefaultIncomeFinancialCalculatorBase extends FinancialRati
                 return ((Literal)result.next().getValue("sum"));
             }
         } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
-            throw new CalculationException(ex);
+            throw new CalculationException(this.getClass().getName(), ex);
         } finally {
             if(repCon!=null){
                 try {

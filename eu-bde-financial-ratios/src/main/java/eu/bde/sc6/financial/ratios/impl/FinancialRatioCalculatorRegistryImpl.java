@@ -69,4 +69,5 @@ public class FinancialRatioCalculatorRegistryImpl implements FinancialRatioCalcu
         } 
         throw new UnknownCalculatorException(className + " is not registered");
     }
+    
 }

@@ -25,6 +25,7 @@ public class FixedNumberExpensePercentageCalculator extends DefaultExpensePercen
             + " <<budget>> skos:related ?municipality . "
             + " ?municipality sc6:population ?population "
             + "}";
+    
     public FixedNumberExpensePercentageCalculator(URI financialRatio, SPARQLRepository dataRepository, SPARQLRepository pptRepository) {
         super(financialRatio, dataRepository, pptRepository);
     }

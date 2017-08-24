@@ -113,6 +113,7 @@ public class TaktikaCalculator extends FinancialRatioCalculatorBase {
     }
     
     private Literal getSum(String query) throws CalculationException{
+        System.out.println(query);
         RepositoryConnection repCon = null;
         TupleQueryResult result = null;
         try {
