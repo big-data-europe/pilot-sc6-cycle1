@@ -38,7 +38,7 @@ import org.openrdf.rio.Rio;
 //public class ThessalonikiCSVParserTest extends VirtuosoCapability {
 public class ThessalonikiCSVParserTest {
 
-    private static final String POOLPARTY_SERVER = "http://bde.poolparty.biz";
+    private static final String POOLPARTY_SERVER = "http://172.28.7.46:8081";
     private static final String POOLPARTY_PROJECT_NAME = "hierarchicalKAE";
     private static final String POOLPARTY_USER = "sc6admin";
     private static final String POOLPARTY_PASS = "sc6admin";

@@ -33,6 +33,8 @@ import static org.junit.Assert.*;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.DCTERMS;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.sparql.SPARQLRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -51,11 +53,17 @@ public class AthensCSVParserTest  {
     private static final String POOLPARTY_PASS = "sc6admin";
     private static final HashSet<String> LABELS_TO_SUBSTITUTE = new HashSet<>();
     
+
+    static SPARQLRepository ppt = null;
+    
     public AthensCSVParserTest() throws MalformedURLException {
     }
     
     @BeforeClass
-    public static void setUpClass() {
+            //https://bde.poolparty.biz/PoolParty/sparql/hierarchicalKAE
+    public static void setUpClass() throws RepositoryException {
+        ppt = new SPARQLRepository(POOLPARTY_SERVER.concat("/sparql").concat(POOLPARTY_PROJECT_NAME));
+        ppt.initialize();
     }
     
     @AfterClass
@@ -197,9 +205,6 @@ public class AthensCSVParserTest  {
                     if(file.toString().contains("2016")){
                         System.out.println("handling: " + file.getFileName().toString());
                         List<Statement> states = parser.transform(file.toString(), Files.readAllBytes(file));
-                        for(Statement state : states){
-                            System.out.println(state);
-                        }
                         LiteralMapperUsingSparql literalMapper = new LiteralMapperUsingSparql(
                                 POOLPARTY_SERVER,
                                 POOLPARTY_PROJECT_NAME,
@@ -210,7 +215,7 @@ public class AthensCSVParserTest  {
                         FileOutputStream fos = null;
                         RDFHandler fileWriter = null;
                         try {
-                            fos = new FileOutputStream(new File("/home/turnguard/projects/swc/bde/resources/sc6/financial-ratios/24082017/athens/incomes/"+(file.getFileName().toString().replaceFirst("csv", "ttl"))));
+                            fos = new FileOutputStream(new File("/home/turnguard/projects/swc/bde/resources/sc6/financial-ratios/11122017/athens/incomes/"+(file.getFileName().toString().replaceFirst("csv", "ttl"))));
                             fileWriter = Rio.createWriter(RDFFormat.TURTLE, fos);
                             fileWriter.startRDF();
                             for(Statement s : states){
@@ -263,7 +268,7 @@ public class AthensCSVParserTest  {
                         FileOutputStream fos = null;
                         RDFHandler fileWriter = null;
                         try {
-                            fos = new FileOutputStream(new File("/home/turnguard/projects/swc/bde/resources/sc6/financial-ratios/24082017/athens/expenses/"+(file.getFileName().toString().replaceFirst("csv", "ttl"))));
+                            fos = new FileOutputStream(new File("/home/turnguard/projects/swc/bde/resources/sc6/financial-ratios/11122017/athens/expenses/"+(file.getFileName().toString().replaceFirst("csv", "ttl"))));
                             fileWriter = Rio.createWriter(RDFFormat.TURTLE, fos);
                             fileWriter.startRDF();
                             for(Statement s : states){

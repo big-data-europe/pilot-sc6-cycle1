@@ -43,7 +43,8 @@ import org.openrdf.rio.Rio;
  */
 public class AllFinancialRatiosCalculatorTest {
 static SPARQLRepository dataRepository = new SPARQLRepository(
-            "https://bde-virtuoso.poolparty.biz/sparql"      
+            //"https://bde-virtuoso.poolparty.biz/sparql"      
+            "http://localhost:8890/sparql"      
     );
     static SPARQLRepository pptRepository = new SPARQLRepository(
             "http://bde.poolparty.biz/PoolParty/sparql/hierarchicalKAE"      
@@ -104,15 +105,19 @@ static SPARQLRepository dataRepository = new SPARQLRepository(
     ) throws FileNotFoundException, RDFHandlerException {
         FileOutputStream fos = null;
         RDFHandler handler = null;
-        try {
-            fos = new FileOutputStream(
-                new File(
+        File target = new File(
                 (
-                "/home/turnguard/projects/swc/bde/resources/sc6/financial-ratios/24082017/"+municipalityLabel.stringValue().toLowerCase()+"/financial-ratios/"
+                "/home/turnguard/projects/swc/bde/resources/sc6/financial-ratios/11122017/"+municipalityLabel.stringValue().toLowerCase()+"/financial-ratios/"
                     .concat(issued.stringValue().split("\\+")[0])
                     .concat(".ttl")
                 )
-                )
+                );
+        if(!target.getParentFile().exists()){
+            target.getParentFile().mkdirs();
+        }
+        try {
+            fos = new FileOutputStream(
+                    target
             );
             handler = Rio.createWriter(RDFFormat.TURTLE, fos);
             handler.startRDF();

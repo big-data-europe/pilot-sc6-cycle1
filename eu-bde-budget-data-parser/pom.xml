@@ -7,13 +7,13 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>eu-bde-budget-data-parser</name>
+    <name>eu-bde-budget-data-parser</name>    
     
     <repositories>    
         <repository>
             <id>bde_nexus_thirdparts</id>
             <name>bde_nexus_thirdparts</name>
-            <url>http://maven.big-data-europe.eu/nexus/content/repositories/thirdparty</url>
+            <url>http://repo.maven.apache.org/maven2/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -21,8 +21,8 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>    
-    </repositories>
-        
+    </repositories> 
+    
     <build>
         <plugins>
             <plugin>
@@ -41,12 +41,24 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.openrdf.sesame</groupId>
-            <artifactId>openrdf-sesame</artifactId>
-            <version>2.7.14</version>
-            <classifier>onejar</classifier>
+         <dependency>
+             <groupId>biz.poolparty.sparqlfacets</groupId>
+             <artifactId>poolparty-sparql-client</artifactId>
+            <version>1.1.0</version>
+           
         </dependency>
+<!-- https://mvnrepository.com/artifact/org.openrdf.sesame/sesame-model -->
+<dependency>
+    <groupId>org.openrdf.sesame</groupId>
+    <artifactId>sesame-rio-rdfxml</artifactId>
+    <version>2.7.14</version>
+</dependency>
+<dependency>
+    <groupId>org.openrdf.sesame</groupId>
+    <artifactId>sesame-repository-sparql</artifactId>
+    <version>2.7.14</version>
+</dependency>
+        
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>

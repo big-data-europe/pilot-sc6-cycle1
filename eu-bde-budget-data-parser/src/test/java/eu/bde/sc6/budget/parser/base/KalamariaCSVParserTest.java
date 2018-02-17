@@ -222,8 +222,12 @@ import org.openrdf.rio.Rio;
                         states = literalMapper.map(states);               
                         FileOutputStream fos = null;
                         RDFHandler fileWriter = null;
+                        File root = new File("/home/turnguard/projects/swc/bde/resources/sc6/financial-ratios/11122017/kalamaria/expenses/");
+                        if(!root.exists()){
+                            root.mkdirs();
+                        }
                         try {
-                            fos = new FileOutputStream(new File("/home/turnguard/projects/swc/bde/resources/sc6/financial-ratios/24082017/kalamaria/expenses/"+(file.getFileName().toString().replaceFirst("csv", "ttl"))));
+                            fos = new FileOutputStream(new File(root,(file.getFileName().toString().replaceFirst("csv", "ttl"))));
                             fileWriter = Rio.createWriter(RDFFormat.TURTLE, fos);
                             fileWriter.startRDF();
                             for(Statement s : states){
